@@ -36,6 +36,7 @@ module pm_parameters
   logical::sink_drag=.false.                 ! Gas dragging sink
   logical::clump_core=.false.                ! Trims the clump (for star formation)
   logical::verbose_AGN=.false.               ! Controls print verbosity for the SMBH case
+  logical::var_T2_min=.false.                ! A model with variable T2_min 
   real(dp)::acc_sink_boost=1.0               ! Boost coefficient for accretion
   real(dp)::mass_merger_vel_check_AGN=-1.0   ! Threshold for velocity check in  merging; in Msun; default: don't check
 
