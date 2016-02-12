@@ -1172,7 +1172,7 @@ subroutine compute_accretion_rate(write_sinks)
            ! make sure that agn feedback doesn't increase the thermal energy of the gas too much
            if(agn)then
 
-              if (var_T2_min.eq..true.) then
+              if (var_T2_min) then
                  ! Minimum specific energy              
                  mass_local=rho_gas(isink)*volume_gas(isink)+msink(isink)
                  r_local=max(dx_min,(3.0*volume_gas(isink)/4.0/3.1415926)**(1.0/3.0))
@@ -1686,7 +1686,7 @@ subroutine make_sink_from_clump(ilevel)
                  end if
                  
                  if(smbh.and.agn)then
-                    if (var_T2_min.eq..true.)then
+                    if (var_T2_min)then
                        ! Minimum specific energy
                        mass_local=rho_gas(index_sink)*volume_gas(index_sink)+msink(index_sink)
                        r_local=max(dx_min,(3.0*volume_gas(index_sink)/4.0/3.1415926)**(1.0/3.0))
