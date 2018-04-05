@@ -89,6 +89,9 @@ module hydro_parameters
   integer::idelay=6
   integer::ixion=6
   integer::ichem=6
+  integer::ivirial1=6
+  integer::ivirial2=6
+  integer::inener=6
 
   ! Maximum temperature limit
   real(dp)::T_limit=1.0d12

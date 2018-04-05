@@ -3,7 +3,9 @@ subroutine courant_fine(ilevel)
   use hydro_commons
   use poisson_commons
   implicit none
+#ifndef WITHOUTMPI
   include 'mpif.h'
+#endif
   integer::ilevel
   !----------------------------------------------------------------------
   ! Using the Courant-Friedrich-Levy stability condition,               !

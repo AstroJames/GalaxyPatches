@@ -3,7 +3,9 @@ subroutine courant_fine(ilevel)
   use hydro_commons
   use poisson_commons
   implicit none
+#ifndef WITHOUTMPI
   include 'mpif.h'
+#endif
   integer::ilevel
   !----------------------------------------------------------------------
   ! Using the Courant-Friedrich-Levy stability condition,               !
@@ -113,6 +115,7 @@ subroutine courant_fine(ilevel)
   ! End loop over grids
 
   ! Compute global quantities
+#ifndef WITHOUTMPI
   call MPI_ALLREDUCE(mass_loc,mass_all,1,MPI_DOUBLE_PRECISION,MPI_SUM,&
        &MPI_COMM_WORLD,info)
   call MPI_ALLREDUCE(ekin_loc,ekin_all,1,MPI_DOUBLE_PRECISION,MPI_SUM,&
@@ -121,7 +124,13 @@ subroutine courant_fine(ilevel)
        &MPI_COMM_WORLD,info)
   call MPI_ALLREDUCE(  dt_loc,  dt_all,1,MPI_DOUBLE_PRECISION,MPI_MIN,&
        &MPI_COMM_WORLD,info)
-
+#else
+  mass_all=mass_loc
+  ekin_all=ekin_loc
+  eint_all=eint_loc
+  dt_all=dt_loc
+#endif
+  
   mass_tot=mass_tot+mass_all
   ekin_tot=ekin_tot+ekin_all
   eint_tot=eint_tot+eint_all

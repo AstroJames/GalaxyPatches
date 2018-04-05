@@ -57,6 +57,9 @@ module amr_parameters
   logical::rt      =.false.   ! Radiative transfer activated
   logical::debug   =.false.   ! Debug mode activated
   logical::static  =.false.   ! Static mode activated
+  logical::static_dm=.false.  ! Static mode for dm only activated
+  logical::static_gas=.false. ! Static mode for gas only activated
+  logical::static_stars=.false.! Static mode for stars only activated
   logical::tracer  =.false.   ! Tracer particles activated
   logical::lightcone=.false.  ! Enable lightcone generation
   logical::clumpfind=.false.  ! Enable clump finder
@@ -81,11 +84,14 @@ module amr_parameters
 
   ! Step parameters
   integer::nrestart=0         ! New run or backup file number
+  integer::nrestart_quad=0    ! Restart with double precision Hilbert keys
+  real(dp)::trestart=0.0      ! Restart time
+  logical::restart_remap=.false. ! Force load balance on restart
   integer::nstepmax=1000000   ! Maximum number of time steps
   integer::ncontrol=1         ! Write control variables
-  integer::fbackup=1000000    ! Backup data to disk
   integer::nremap=0           ! Load balancing frequency (0: never)
-
+  integer,allocatable,dimension(:)::remap_pscalar
+  
   ! Output parameters
   integer::iout=1             ! Increment for output times
   integer::ifout=1            ! Increment for output files
@@ -142,7 +148,13 @@ module amr_parameters
   real(dp)::kappa_IR=0d0      ! IR dust opacity
   real(dp)::ind_rsink=4.0d0   ! Number of cells defining the radius of the sphere where AGN feedback is active
   real(dp)::ir_eff=0.75       ! efficiency of the IR feedback (only when ir_feedback=.true.)
-
+  real(dp)::sf_trelax=0.0D0   ! Relaxation time for star formation (cosmo=.false. only)
+  real(dp)::sf_tdiss=0.0D0    ! Dissipation timescale for subgrid turbulence in units of turbulent crossing time
+  integer::sf_model=3         ! Virial star formation model
+  integer::nlevel_collapse=3  ! Number of levels to follow initial dark matter collapse (cosmo=.true. only)
+  real(dp)::mass_star_max=120.0D0 ! Maximum mass of a star in solar mass
+  real(dp)::mass_sne_min=10.0D0   ! Minimum mass of a single supernova in solar mass
+  logical::momentum_feedback=.false. ! Use supernovae momentum feedback if cooling radius not resolved
 
   logical ::self_shielding=.false.
   logical ::pressure_fix=.false.
@@ -156,7 +168,12 @@ module amr_parameters
   logical ::smbh=.false.
   logical ::agn=.false.
   logical ::use_proper_time=.false.
+  logical ::convert_birth_times=.false. ! Convert stellar birthtimes: conformal -> proper
   logical ::ir_feedback=.false. ! Activate ir feedback from accreting sinks
+  logical ::sf_virial=.false.   ! Activate SF Virial criterion
+  logical ::sf_log_properties=.false. ! Log in ascii files birth properties of stars and supernovae
+  logical ::sf_imf=.false.      ! Activate IMF sampling for SN feedback when resolution allows it
+  logical ::sf_compressive=.false. ! Advect compressive and solenoidal turbulence terms separately
 
 
   ! Output times
@@ -164,28 +181,48 @@ module amr_parameters
   real(dp),dimension(1:MAXOUT)::tout=0.0       ! Output times
 
   ! Movie
+  integer,parameter::NMOV=5
   integer::imovout=0             ! Increment for output times
   integer::imov=1                ! Initialize
+  real(kind=8)::tstartmov=0.,astartmov=0.
   real(kind=8)::tendmov=0.,aendmov=0.
   real(kind=8),allocatable,dimension(:)::amovout,tmovout
   logical::movie=.false.
   integer::nw_frame=512 ! prev: nx_frame, width of frame in pixels
   integer::nh_frame=512 ! prev: ny_frame, height of frame in pixels
   integer::levelmax_frame=0
-  integer::ivar_frame=1
-  real(kind=8),dimension(1:20)::xcentre_frame=0d0
-  real(kind=8),dimension(1:20)::ycentre_frame=0d0
-  real(kind=8),dimension(1:20)::zcentre_frame=0d0
-  real(kind=8),dimension(1:10)::deltax_frame=0d0
-  real(kind=8),dimension(1:10)::deltay_frame=0d0
-  real(kind=8),dimension(1:10)::deltaz_frame=0d0
-  character(LEN=5)::proj_axis='z' ! x->x, y->y, projection along z
+  real(kind=8),dimension(1:4*NMOV)::xcentre_frame=0d0
+  real(kind=8),dimension(1:4*NMOV)::ycentre_frame=0d0
+  real(kind=8),dimension(1:4*NMOV)::zcentre_frame=0d0
+  real(kind=8),dimension(1:2*NMOV)::deltax_frame=0d0
+  real(kind=8),dimension(1:2*NMOV)::deltay_frame=0d0
+  real(kind=8),dimension(1:2*NMOV)::deltaz_frame=0d0
+  real(kind=8),dimension(1:NMOV)::dtheta_camera=0d0
+  real(kind=8),dimension(1:NMOV)::dphi_camera=0d0
+  real(kind=8),dimension(1:NMOV)::theta_camera=0d0
+  real(kind=8),dimension(1:NMOV)::phi_camera=0d0
+  real(kind=8),dimension(1:NMOV)::tstart_theta_camera=0d0
+  real(kind=8),dimension(1:NMOV)::tstart_phi_camera=0d0
+  real(kind=8),dimension(1:NMOV)::tend_theta_camera=0d0
+  real(kind=8),dimension(1:NMOV)::tend_phi_camera=0d0
+  real(kind=8),dimension(1:NMOV)::focal_camera=0d0
+  real(kind=8),dimension(1:NMOV)::dist_camera=0d0
+  real(kind=8),dimension(1:NMOV)::ddist_camera=0d0
+  real(kind=8),dimension(1:NMOV)::smooth_frame=1d0
+  real(kind=8),dimension(1:NMOV)::varmin_frame=-1d60
+  real(kind=8),dimension(1:NMOV)::varmax_frame=1d60
+  integer,dimension(1:NMOV)::ivar_frame=0
+  logical,dimension(1:NMOV)::perspective_camera=.false.
+  logical,dimension(1:NMOV)::zoom_only_frame=.false.
+  character(LEN=NMOV)::proj_axis='z' ! x->x, y->y, projection along z
+  character(LEN=6),dimension(1:NMOV)::shader_frame='square'
+  character(LEN=10),dimension(1:NMOV)::method_frame='mean_mass'
 #ifdef SOLVERmhd
-  integer,dimension(0:NVAR+6)::movie_vars=0
-  character(len=5),dimension(0:NVAR+6)::movie_vars_txt=''
+  integer,dimension(0:NVAR+7)::movie_vars=0
+  character(len=5),dimension(0:NVAR+7)::movie_vars_txt=''
 #else
-  integer,dimension(0:NVAR+2)::movie_vars=0
-  character(len=5),dimension(0:NVAR+2)::movie_vars_txt=''
+  integer,dimension(0:NVAR+3)::movie_vars=0
+  character(len=5),dimension(0:NVAR+3)::movie_vars_txt=''
 #endif
 
   ! Refinement parameters for each level
