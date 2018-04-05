@@ -57,7 +57,7 @@ subroutine condinit(x,u,dx,nn,ln_d)
 
   
   ! Only for AMR runs trick to always inject energy
-  if(levelmin.ne.nlevelmax.and.rc<dx)rc=dx  
+  !if(levelmin.ne.nlevelmax.and.rc<dx)rc=dx  
 
   ! Convert SN thermal and kinetic energies from cgs to code units.
   E_SN_th_int = E_SN_th/(scale_v**2.0*scale_d*scale_l**3.0) 

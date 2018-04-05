@@ -3,9 +3,9 @@
 #############################################################################
 # Compilation time parameters
 NVECTOR = 32
-NDIM = 1
+NDIM = 3
 NPRE = 8
-NVAR = 5
+NVAR = 6
 NENER = 0
 SOLVER = hydro
 PATCH = 
@@ -16,7 +16,7 @@ GITHASH = $(shell git log --pretty=format:'%H' -n 1)
 GITREPO = $(shell git config --get remote.origin.url)
 BUILDDATE = $(shell date +"%D-%T")
 DEFINES = -DNVECTOR=$(NVECTOR) -DNDIM=$(NDIM) -DNPRE=$(NPRE) -DNENER=$(NENER) -DNVAR=$(NVAR) \
-          -DSOLVER$(SOLVER)
+          -DSOLVER$(SOLVER) 
 #############################################################################
 # Fortran compiler options and directives
 
