@@ -951,7 +951,7 @@ subroutine compute_accretion_rate(write_sinks)
   real(dp)::r2,v2,c2,density,volume,ethermal,dx_min,scale,mgas,rho_inf,v_bondi
   real(dp),dimension(1:3)::velocity
   real(dp),dimension(1:nsinkmax)::dMEDoverdt
-  real(dp)::T2_gas,delta_mass_min,mass_local,r_local
+  real(dp)::T2_gas,delta_mass_min
 
   dt_acc=huge(0._dp)
 
@@ -1032,13 +1032,6 @@ subroutine compute_accretion_rate(write_sinks)
 
            ! make sure that agn feedback doesn't increase the thermal energy of the gas too much
            if(agn)then
-
-              if (var_T2_min) then
-                 ! Minimum specific energy              
-                 mass_local=rho_gas(isink)*volume_gas(isink)+msink(isink)
-                 r_local=max(dx_min,(3.0*volume_gas(isink)/4.0/3.1415926)**(1.0/3.0))
-                 T2_min=max(1d6,6.67d-8*1.67e-24/1.38e-16*mass_local/r_local*scale_d*scale_l**2)
-              end if
 
               ! check whether we should have AGN feedback
               ok_blast_agn(isink)=.false.
@@ -1337,7 +1330,7 @@ subroutine make_sink_from_clump(ilevel)
   logical ::ok_free
   real(dp)::d,u,v,w,e,factG,delta_d,v2
   real(dp)::birth_epoch
-  real(dp)::dx,dx_loc,dx_min,scale,vol_loc
+  real(dp)::dx,dx_loc,scale,vol_loc
   real(dp)::fourpi,threepi2,tff,tsal
   real(dp)::scale_l,scale_t,scale_d,scale_v,scale_nH,scale_T2
   real(dp)::mclump
@@ -1367,7 +1360,6 @@ subroutine make_sink_from_clump(ilevel)
   scale=boxlen/dble(nx_loc)
   dx_loc=dx*scale
   vol_loc=dx_loc**ndim
-  dx_min=0.5D0**nlevelmax*scale/aexp
 
   ! Conversion factor from user units to cgs units
   call units(scale_l,scale_t,scale_d,scale_v,scale_nH,scale_T2)
@@ -1551,12 +1543,6 @@ subroutine make_sink_from_clump(ilevel)
                  end if
 
                  if(smbh.and.agn)then
-                    if (var_T2_min)then
-                       ! Minimum specific energy
-                       mass_local=rho_gas(index_sink)*volume_gas(index_sink)+msink(index_sink)
-                       r_local=max(dx_min,(3.0*volume_gas(index_sink)/4.0/3.1415926)**(1.0/3.0))
-                       T2_min=max(1d6,6.67d-8*1.67e-24/1.38e-16*mass_local/r_local*scale_d*scale_l**2)
-                    end if
                     mclump=clump_mass4(flag2(ind_cell_new(i)))
                     mseed_new(index_sink)=0.5*T2_min/T2_AGN*mclump
                  end if
@@ -2557,7 +2543,7 @@ subroutine read_sink_params()
   namelist/sink_params/n_sink,rho_sink,d_sink,accretion_scheme,merging_timescale,&
        ir_cloud_massive,sink_soft,mass_sink_direct_force,ir_cloud,nsinkmax,c_acc,create_sinks,mass_sink_seed,&
        eddington_limit,sink_drag,acc_sink_boost,mass_merger_vel_check_AGN,&
-       clump_core,verbose_AGN,T2_AGN,v_AGN,cone_opening,mass_halo_AGN,mass_clump_AGN,feedback_scheme,var_T2_min
+       clump_core,verbose_AGN,T2_AGN,v_AGN,cone_opening,mass_halo_AGN,mass_clump_AGN,feedback_scheme
   real(dp)::scale_nH,scale_T2,scale_l,scale_d,scale_t,scale_v
 
   if(.not.cosmo) call units(scale_l,scale_t,scale_d,scale_v,scale_nH,scale_T2)
