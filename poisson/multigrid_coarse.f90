@@ -12,7 +12,7 @@ subroutine full_multigrid(icount)
   logical::multigrid=.false.
 
   ! Exit routine if no self-gravity
-  if(gravity_type>0)return
+  if(gravity_type>0)return 
 
   ! Compute rho for all coarser levels using restriction operator
   do ilevel=levelmin-1,1,-1
