@@ -293,8 +293,8 @@ module amr_parameters
   integer::nblast_current=1,nblast_current_internal,nsnr
   integer,allocatable,dimension(:)::marker
   logical, save:: init_marker=.false.  
-  integer::nrandom=500000
-  real(dp),dimension(1:500000)::random_expl,x_expl,y_expl,z_expl
+  integer::nrandom=5000
+  real(dp),dimension(1:5000)::random_expl,x_expl,y_expl,z_expl
 
 
 
