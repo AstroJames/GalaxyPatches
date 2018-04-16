@@ -399,11 +399,11 @@ subroutine blast_wave_feedback(ilevel,icount)
   real(dp),dimension(1:3)::skip_loc
   real(dp),dimension(1:twotondim,1:3)::xc
   logical ,dimension(1:nvector)::ok
-  real(kind=8)::RandNum
+  real(dp)::RandNum
   integer::isnr,nrandom_local,n_expl
   integer,dimension(:),allocatable::num_snr_local
-  real(kind=8),dimension(:),allocatable::xsnr,ysnr,zsnr
-  real(kind=8),dimension(:),allocatable::rho_average,rho_average_all,weight,weight_all
+  real(dp),dimension(:),allocatable::xsnr,ysnr,zsnr
+  real(dp),dimension(:),allocatable::rho_average,rho_average_all,weight,weight_all
   real(dp)::PoissMean,t_s,boost,dcgs,ddyn,vri,vxi,vyi,vzi,mu,a1,a2,z0
   integer ,dimension(1:ncpu,1:IRandNumSize)::allseed
   real(dp)::Ei,Vi,Pi_,M_ej,rho_ej,pi
