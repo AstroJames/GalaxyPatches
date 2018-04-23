@@ -544,7 +544,7 @@ subroutine blast_wave_feedback(ilevel,icount)
      ! End loop over grids                                                                                                                              
   end do
   ! End loop over levels    
-
+  
   ! Share the locations of the explosions with the other cores
 #ifndef WITHOUTMPI
   x_expl=0.0d0
