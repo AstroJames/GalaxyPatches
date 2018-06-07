@@ -686,7 +686,7 @@ subroutine solve_cooling(nH,T2,zsolar,boost,dt,deltaT2,ncell,LAGN,r,z)
            metal_prime=metal/tau(ind(i))*(alpha+2d0*beta*yy+3d0*gamma*yy2)
 
            ! Total net cooling
-           lambda=cool+zzz(ind(i))*metal-heat-heating_peh+(cool_com-heat_com)/nH(ind(i))
+           lambda=cool+zzz(ind(i))*metal-heat+(cool_com-heat_com-heating_peh)/nH(ind(i))
            lambda_prime=cool_prime+zzz(ind(i))*metal_prime-heat_prime+(cool_com_prime-heat_com_prime)/nH(ind(i))
 
         else
