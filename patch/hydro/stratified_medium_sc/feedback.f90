@@ -399,11 +399,11 @@ subroutine blast_wave_feedback(ilevel,icount)
   real(dp),dimension(1:3)::skip_loc
   real(dp),dimension(1:twotondim,1:3)::xc
   logical ,dimension(1:nvector)::ok
-  real(kind=8)::RandNum
+  real(dp)::RandNum
   integer::isnr,nrandom_local,n_expl
   integer,dimension(:),allocatable::num_snr_local
-  real(kind=8),dimension(:),allocatable::xsnr,ysnr,zsnr
-  real(kind=8),dimension(:),allocatable::rho_average,rho_average_all,weight,weight_all
+  real(dp),dimension(:),allocatable::xsnr,ysnr,zsnr
+  real(dp),dimension(:),allocatable::rho_average,rho_average_all,weight,weight_all
   real(dp)::PoissMean,t_s,boost,dcgs,ddyn,vri,vxi,vyi,vzi,mu,a1,a2,z0
   integer ,dimension(1:ncpu,1:IRandNumSize)::allseed
   real(dp)::Ei,Vi,Pi_,M_ej,rho_ej,pi
@@ -872,7 +872,7 @@ subroutine blast_wave_feedback(ilevel,icount)
                           uold(ind_cell(i),3)=uold(ind_cell(i),3)+(rho_ej+rho_average(isnr))*vyi
                           uold(ind_cell(i),4)=uold(ind_cell(i),4)+(rho_ej+rho_average(isnr))*vzi
                           uold(ind_cell(i),5)=uold(ind_cell(i),5)+0.5*(rho_ej+rho_average(isnr))*(vxi**2+vyi**2+vzi**2)+Pi_/(gamma-1.0d0)
-                          
+                          if(metal)uold(ind_cell(i),6)=uold(ind_cell(i),6)+yield*rho_ej ! metal yield
                        end if
                     end do
                  end if

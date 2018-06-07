@@ -294,7 +294,8 @@ module amr_parameters
   integer,allocatable,dimension(:)::marker
   logical, save:: init_marker=.false.  
   integer::nrandom=5000
-  real(dp),dimension(1:5000)::random_expl,x_expl,y_expl,z_expl
+  integer,dimension(1:5000)::random_expl
+  real(dp),dimension(1:5000)::x_expl,y_expl,z_expl
 
 
 
