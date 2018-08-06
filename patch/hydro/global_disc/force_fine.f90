@@ -2,6 +2,7 @@
 !#########################################################
 !#########################################################
 !#########################################################
+!subroutine force_fine(ilevel,icount,switcher)
 subroutine force_fine(ilevel,icount)
   use amr_commons
   use pm_commons
@@ -11,7 +12,7 @@ subroutine force_fine(ilevel,icount)
   include 'mpif.h'
   integer::info
 #endif
-  integer::ilevel,icount
+  integer::ilevel,icount !,switcher
   !----------------------------------------------------------
   ! This routine computes the gravitational acceleration,
   ! the maximum density rho_max, and the potential energy
@@ -56,8 +57,41 @@ subroutine force_fine(ilevel,icount)
   !-------------------------------------
   if(gravity_type>0)then
 
+     ! Davide Martizzi: initialize force
+     ncache=active(ilevel)%ngrid
+     do igrid=1,ncache,nvector
+        ngrid=MIN(nvector,ncache-igrid+1)
+        do i=1,ngrid
+           ind_grid(i)=active(ilevel)%igrid(igrid+i-1)
+        end do
+
+        ! Loop over cells
+        do ind=1,twotondim
+
+           ! Gather cell indices
+           iskip=ncoarse+(ind-1)*ngridmax
+           do i=1,ngrid
+              ind_cell(i)=iskip+ind_grid(i)
+           end do
+
+           !if((gas_sg.and.(switcher.eq.1)).or.(.not.gas_sg))then
+           do idim=1,ndim
+              do i=1,ngrid
+                 f(ind_cell(i),idim)=0.0d0
+                 fana(ind_cell(i),idim)=0.0d0 ! Davide Martizzi
+              end do
+           end do
+           !end if
+
+        end do
+        ! End loop over cells
+
+     end do
+     ! End loop over grids
+
      ! Davide Martizzi: if gas self-gravity is on
      ! compute force from gas + particles
+     !if(gas_sg.and.(switcher.eq.1))then
      if(gas_sg)then
         ! Update physical boundaries
         call make_boundary_phi(ilevel)
@@ -83,16 +117,17 @@ subroutine force_fine(ilevel,icount)
 
      ! Davide Martizzi: add analytical force
      ! Loop over myid grids by vector sweeps
+     !if((.not.gas_sg).or.(gas_sg.and.switcher.eq.2))then
      ncache=active(ilevel)%ngrid
      do igrid=1,ncache,nvector
         ngrid=MIN(nvector,ncache-igrid+1)
         do i=1,ngrid
            ind_grid(i)=active(ilevel)%igrid(igrid+i-1)
         end do
-
+        
         ! Loop over cells
         do ind=1,twotondim
-
+           
            ! Gather cell indices
            iskip=ncoarse+(ind-1)*ngridmax
            do i=1,ngrid
@@ -110,28 +145,32 @@ subroutine force_fine(ilevel,icount)
                  xx(i,idim)=(xx(i,idim)-skip_loc(idim))*scale
               end do
            end do
-
+           
            ! Call analytical gravity routine
            call gravana(xx,ff,dx_loc,ngrid)
-
+           
            ! Scatter variables
            do idim=1,ndim
               do i=1,ngrid
-                 f(ind_cell(i),idim)=f(ind_cell(i),idim)+ff(i,idim)
+                 fana(ind_cell(i),idim)=ff(i,idim) ! Davide Martizzi
               end do
            end do
-
+           
         end do
         ! End loop over cells
-
+        
      end do
      ! End loop over grids
-
+     !end if
+     
+     !if((.not.gas_sg).or.(gas_sg.and.switcher.eq.1))then
      ! Update boundaries
      do idim=1,ndim
-        call make_virtual_fine_dp(f(1,idim),ilevel)
+        call make_virtual_fine_dp(f(1,idim),ilevel) 
+        call make_virtual_fine_dp(fana(1,idim),ilevel)
      end do
      if(simple_boundary)call make_boundary_force(ilevel)
+     !end if
 
   !------------------------------
   ! Compute gradient of potential

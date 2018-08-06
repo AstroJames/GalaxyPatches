@@ -3,7 +3,7 @@
 !################################################################
 !################################################################
 #if NDIM==3
-subroutine thermal_feedback(ilevel)
+subroutine SN_feedback(ilevel)
   use pm_commons
   use amr_commons
   use hydro_commons
@@ -122,7 +122,11 @@ subroutine thermal_feedback(ilevel)
                  ind_grid_part(ip)=ig
               endif
               if(ip==nvector)then
-                 call feedbk(ind_grid,ind_part,ind_grid_part,ig,ip,ilevel)
+                 if (.not.adaptive_feedback)then
+                    call feedbk(ind_grid,ind_part,ind_grid_part,ig,ip,ilevel)
+                 else
+                    call adp_feedbk(ind_grid,ind_part,ind_grid_part,ig,ip,ilevel) ! Davide Martizzi: this is the new routine
+                 end if
                  ip=0
                  ig=0
               end if
@@ -133,7 +137,13 @@ subroutine thermal_feedback(ilevel)
         igrid=next(igrid)   ! Go to next grid
      end do
      ! End loop over grids
-     if(ip>0)call feedbk(ind_grid,ind_part,ind_grid_part,ig,ip,ilevel)
+     if(ip>0)then ! Davide Martizzi: added 2 options
+        if (.not.adaptive_feedback)then
+           call feedbk(ind_grid,ind_part,ind_grid_part,ig,ip,ilevel)
+        else
+           call adp_feedbk(ind_grid,ind_part,ind_grid_part,ig,ip,ilevel) ! Davide Martizzi: this is the new routine
+        end if
+     end if
   end do
   ! End loop over cpus
 
@@ -141,7 +151,7 @@ subroutine thermal_feedback(ilevel)
 
 111 format('   Entering thermal_feedback for level ',I2)
 
-end subroutine thermal_feedback
+end subroutine SN_feedback
 #endif
 !################################################################
 !################################################################
@@ -219,20 +229,22 @@ subroutine feedbk(ind_grid,ind_part,ind_grid_part,ng,np,ilevel)
   ! Massive star lifetime from Myr to code units
   ! Davide Martizzi: slowly ramp up the t0 from 0 to t_sne
   if(use_proper_time)then
-     !t0=t_sne*1d6*(365.*24.*3600.)/(scale_t/aexp**2)
+     t0=t_sne*1d6*(365.*24.*3600.)/(scale_t/aexp**2)
      current_time=texp
-     t0 = MIN(current_time,t_sne*1d6*(365.*24.*3600.)/(scale_t/aexp**2))
+     !if(current_time.lt.t0) t0=t0/2
+     !t0 = MIN(current_time,t_sne*1d6*(365.*24.*3600.)/(scale_t/aexp**2))
   else
-     !t0=t_sne*1d6*(365.*24.*3600.)/scale_t
+     t0=t_sne*1d6*(365.*24.*3600.)/scale_t
      current_time=t
-     t0 = MIN(current_time,t_sne*1d6*(365.*24.*3600.)/(scale_t/aexp**2))
+     !if(current_time.lt.t0) t0=t0/2
+     !t0 = MIN(current_time,t_sne*1d6*(365.*24.*3600.)/(scale_t/aexp**2))
   endif
 
   ! Type II supernova specific energy from cgs to code units
-  ESN=1d51/(10.*2d33)/scale_v**2
+  ESN=1d51/(10.*2d33)/scale_v**2 ! Davide Martizzi: This is the energy in the original model
 
   ! Life time radiation specific energy from cgs to code units
-  ERAD=1d53/(10.*2d33)/scale_v**2
+  ERAD=1d53/(10.*2d33)/scale_v**2 ! Davide Martizzi: This is the energy in the original model
 
   ! Lower left corner of 3x3x3 grid-cube
   do idim=1,ndim
@@ -335,7 +347,11 @@ subroutine feedbk(ind_grid,ind_part,ind_grid_part,ng,np,ilevel)
   ! Compute stellar mass loss and thermal feedback due to supernovae
   if(f_w==0)then
      do j=1,np
-        birth_time=tp(ind_part(j))
+        if(current_time.lt.t0)then ! Davide Martizzi
+           birth_time=tp(ind_part(j))-t0
+        else
+           birth_time=tp(ind_part(j))
+        end if
         ! Make sure that we don't count feedback twice
         if(birth_time.lt.(current_time-t0).and.birth_time.ge.(current_time-t0-dteff(j)))then
            eta_sn2   = eta_sn
@@ -355,8 +371,14 @@ subroutine feedbk(ind_grid,ind_part,ind_grid_part,ng,np,ilevel)
               zloss=yield+(1d0-yield)*zp(ind_part(j))
               mzloss(j)=mzloss(j)+mejecta*zloss/vol_loc(j)
            endif
-           ! Reduce star particle mass
-           mp(ind_part(j))=mp(ind_part(j))-mejecta
+           ! Reduce star particle mass ! Davide Martizzi
+           if(current_time.ge.t0) mp(ind_part(j))=mp(ind_part(j))-mejecta
+           !if(use_proper_time)then           
+           !   if(t0.eq.t_sne*1d6*(365.*24.*3600.)/(scale_t/aexp**2)) mp(ind_part(j))=mp(ind_part(j))-mejecta
+           !else
+           !   if(t0.eq.t_sne*1d6*(365.*24.*3600.)/(scale_t)) mp(ind_part(j))=mp(ind_part(j))-mejecta
+           !end if
+
            ! Boost SNII energy and depopulate accordingly
            if(SN_BOOST>1d0)then
               call ranf(localseed,RandNum)
@@ -465,6 +487,505 @@ subroutine feedbk(ind_grid,ind_part,ind_grid_part,ng,np,ilevel)
   endif
 
 end subroutine feedbk
+#endif
+!################################################################
+!################################################################
+!################################################################
+!################################################################
+#if NDIM==3
+subroutine adp_feedbk(ind_grid,ind_part,ind_grid_part,ng,np,ilevel)
+  use amr_commons
+  use pm_commons
+  use hydro_commons
+  use random
+  implicit none
+  integer::ng,np,ilevel
+  integer,dimension(1:nvector)::ind_grid
+  integer,dimension(1:nvector)::ind_grid_part,ind_part
+  !-----------------------------------------------------------------------
+  ! This routine is called by subroutine feedback. Each stellar particle
+  ! dumps mass, momentum and energy in the surrounding 9+1 cells
+  !-----------------------------------------------------------------------
+  integer::i,j,k,l,idim,nx_loc,ivar,ilun=0
+  integer::indcell_inj,indgrid_inj
+  real(kind=8)::RandNum
+  real(dp)::mstar,dx_min,vol_min
+  real(dp)::t0,ESN,mejecta,zloss,e,uvar
+  real(dp)::ERAD,RAD_BOOST,tauIR,msne_min,mstar_max,eta_sn2
+  real(dp)::delta_x,tau_factor,rad_factor
+  real(dp)::dx,dx_loc,scale,birth_time,current_time
+  real(dp)::scale_nH,scale_T2,scale_l,scale_d,scale_t,scale_v
+  real(dp)::rr
+  ! Grid based arrays
+  real(dp),dimension(1:nvector,1:ndim),save::x0
+  integer ,dimension(1:nvector),save::ind_cell
+  integer ,dimension(1:nvector,1:threetondim),save::nbors_father_cells
+  integer ,dimension(1:nvector,1:twotondim),save::nbors_father_grids
+  integer ,dimension(1:ndim)::kfather,lson
+  real(dp),dimension(1:ndim)::x_inj,drvec
+  ! Particle based arrays
+  logical,dimension(1:nvector),save::ok
+  real(dp),dimension(1:nvector),save::mloss,mzloss,ethermal,ekinetic
+  real(dp),dimension(1:nvector),save::pradial,dteff,vol_loc
+  real(dp),dimension(1:nvector),save::rho_FB,met_FB,vol_FB,R_inj_FB
+  real(dp),dimension(1:nvector,1:ndim),save::x
+  real(dp),dimension(1:nvector,1:ndim),save::x_FB
+  integer ,dimension(1:nvector,1:ndim),save::id,igd,icd
+  integer ,dimension(1:nvector),save::flag_SN
+  integer ,dimension(1:nvector),save::igrid,icell,indp,kg
+  real(dp),dimension(1:3)::skip_loc
+#if NENER>0
+  integer::irad
+#endif
+  ! Parameters of subgrid model
+  real(dp)::alpha,rcool,rrise,rnod,rbreak,met_floor
+
+  if(sf_log_properties) ilun=myid+10
+  ! Conversion factor from user units to cgs units
+  call units(scale_l,scale_t,scale_d,scale_v,scale_nH,scale_T2)
+
+  ! Mesh spacing in that level
+  dx=0.5D0**ilevel
+  nx_loc=(icoarse_max-icoarse_min+1)
+  skip_loc=(/0.0d0,0.0d0,0.0d0/)
+  if(ndim>0)skip_loc(1)=dble(icoarse_min)
+  if(ndim>1)skip_loc(2)=dble(jcoarse_min)
+  if(ndim>2)skip_loc(3)=dble(kcoarse_min)
+  scale=boxlen/dble(nx_loc)
+  dx_loc=dx*scale
+  vol_loc(1:nvector)=dx_loc**ndim
+  dx_min=(0.5D0**nlevelmax)*scale
+  vol_min=dx_min**ndim
+
+  ! Minimum star particle mass
+  if(m_star < 0d0)then
+     mstar=n_star/(scale_nH*aexp**3)*vol_min
+  else
+     mstar=m_star*mass_sph
+  endif
+  msne_min=mass_sne_min*2d33/(scale_d*scale_l**3)
+  mstar_max=mass_star_max*2d33/(scale_d*scale_l**3)
+
+  ! Compute individual time steps
+  do j=1,np
+     dteff(j)=dtnew(levelp(ind_part(j)))
+  end do
+
+  if(use_proper_time)then
+     do j=1,np
+        dteff(j)=dteff(j)*aexp**2
+     end do
+  endif
+
+  ! Massive star lifetime from Myr to code units
+  ! Davide Martizzi: slowly ramp up the t0 from 0 to t_sne
+  if(use_proper_time)then
+     t0=t_sne*1d6*(365.*24.*3600.)/(scale_t/aexp**2)
+     current_time=texp
+     !if(current_time.lt.t0) t0=t0/2
+     !t0 = MIN(current_time,t_sne*1d6*(365.*24.*3600.)/(scale_t/aexp**2))
+  else
+     t0=t_sne*1d6*(365.*24.*3600.)/scale_t
+     current_time=t
+     !if(current_time.lt.t0) t0=t0/2
+     !t0 = MIN(current_time,t_sne*1d6*(365.*24.*3600.)/(scale_t/aexp**2))
+  endif
+
+  ! Type II supernova specific energy from cgs to code units
+  ESN=1d51/(10.*2d33)/scale_v**2 ! Davide Martizzi: This is the energy in the original model, now not used
+
+  ! Life time radiation specific energy from cgs to code units
+  ERAD=1d53/(10.*2d33)/scale_v**2 ! Davide Martizzi: This is the energy in the original model
+
+  ! Davide Martizzi: Reset local ISM properties and
+  ! flag particles that should inject SNe
+  do j=1,np
+     rho_FB(j)=0.0d0
+     met_FB(j)=0.0d0
+     vol_FB(j)=1.0d-20
+     R_inj_FB(j)=0.0d0
+     flag_SN(j)=0
+     do idim=1,ndim
+        x_FB(j,idim)=0.0d0
+        x_inj(idim)=0.0d0
+     end do
+     if(current_time.lt.t0)then ! Davide Martizzi
+        birth_time=tp(ind_part(j))-t0
+     else
+        birth_time=tp(ind_part(j))
+     end if
+     if(birth_time.lt.(current_time-t0).and.birth_time.ge.(current_time-t0-dteff(j))) flag_SN(j)=1
+  end do
+
+  ! Lower left corner of 3x3x3 grid-cube
+  do idim=1,ndim
+     do i=1,ng
+        x0(i,idim)=xg(ind_grid(i),idim)-3.0D0*dx
+     end do
+  end do
+
+  ! Gather 27 neighboring father cells (should be present anytime !)
+  do i=1,ng
+     ind_cell(i)=father(ind_grid(i))
+  end do
+  call get3cubefather(ind_cell,nbors_father_cells,nbors_father_grids,ng,ilevel)
+
+  ! Rescale position at level ilevel
+  do idim=1,ndim
+     do j=1,np
+        x(j,idim)=xp(ind_part(j),idim)/scale+skip_loc(idim)
+     end do
+  end do
+  do idim=1,ndim
+     do j=1,np
+        x(j,idim)=x(j,idim)-x0(ind_grid_part(j),idim)
+     end do
+  end do
+  do idim=1,ndim
+     do j=1,np
+        x(j,idim)=x(j,idim)/dx
+     end do
+  end do
+
+  ! NGP at level ilevel
+  do idim=1,ndim
+     do j=1,np
+        id(j,idim)=int(x(j,idim))
+     end do
+  end do
+
+  ! Compute parent grids
+  do idim=1,ndim
+     do j=1,np
+        igd(j,idim)=id(j,idim)/2
+     end do
+  end do
+  do j=1,np
+     kg(j)=1+igd(j,1)+3*igd(j,2)+9*igd(j,3)
+  end do
+  do j=1,np
+     igrid(j)=son(nbors_father_cells(ind_grid_part(j),kg(j)))
+  end do
+
+  ! Check if particles are entirely in level ilevel
+  ok(1:np)=.true.
+  do j=1,np
+     ok(j)=ok(j).and.igrid(j)>0
+  end do
+
+  ! Compute parent cell position
+  do idim=1,ndim
+     do j=1,np
+        if(ok(j))then
+           icd(j,idim)=id(j,idim)-2*igd(j,idim)
+        end if
+     end do
+  end do
+  do j=1,np
+     if(ok(j))then
+        icell(j)=1+icd(j,1)+2*icd(j,2)+4*icd(j,3)
+     end if
+  end do
+
+  ! Compute parent cell adresses
+  do j=1,np
+     if(ok(j))then
+        indp(j)=ncoarse+(icell(j)-1)*ngridmax+igrid(j)
+     else
+        indp(j) = nbors_father_cells(ind_grid_part(j),kg(j))
+        vol_loc(j)=vol_loc(j)*2**ndim ! ilevel-1 cell volume
+     end if
+  end do
+
+  ! Davide Martizzi: Compute ISM properties for all particles
+  if(f_w==0)then
+     do j=1,np
+        if(ok(j).and.flag_SN(j).gt.0)then
+           ! Feedback injection radius and position
+           R_inj_FB(j) = 2.05*dx*SQRT(dble(ndim))
+           do idim=1,ndim
+              x_FB(j,idim) = xp(ind_part(j),idim)/scale+skip_loc(idim)
+           end do
+           ! Loop over 27 neighbor father cells 
+           do k=1,3**ndim
+              ! Grid index associated to father cell
+              indgrid_inj=son(nbors_father_cells(ind_grid_part(j),k))
+              if (indgrid_inj.gt.0) then 
+                 ! If neighbor father cell has sons
+                 ! include neighbor cell at the same level
+                 kfather(3) = (k-1)/9
+                 kfather(2) = (k-1-9*kfather(3))/3
+                 kfather(1) = (k-1-9*kfather(3)-3*kfather(2))                 
+                 do l=1,2**ndim ! loop on all cells in the neighbour father grid
+                    lson(3) = (l-1)/4
+                    lson(2) = (l-1-4*lson(3))/2
+                    lson(1) = (l-1-4*lson(3)-2*lson(2))
+                    do idim=1,ndim
+                       ! Grid center
+                       x_inj(idim) = xg(indgrid_inj,idim)
+                       ! Add offset with respect to grid center
+                       x_inj(idim) = x_inj(idim)+(dble(lson(idim))-0.5)*dx
+                    end do
+                    ! Only add if radius is within R_inj_FB
+                    rr = SQRT((x_inj(1)-x_FB(j,1))**2+(x_inj(2)-x_FB(j,2))**2+(x_inj(3)-x_FB(j,3))**2)
+                    if (rr.lt.R_inj_FB(j)) then
+                       indcell_inj = ncoarse+(l-1)*ngridmax+indgrid_inj
+                       vol_FB(j) = vol_FB(j) + dx_loc**ndim
+                       rho_FB(j) = rho_FB(j) + unew(indcell_inj,1)*dx_loc**ndim
+                       if(metal) met_FB(j) = met_FB(j) + unew(indcell_inj,imetal)*dx_loc**ndim
+                    end if
+                 end do
+              else
+                 ! If neighbor father cell does not have sons
+                 ! include neighbor father cell at lower level
+                 kfather(3) = (k-1)/9
+                 kfather(2) = (k-1-9*kfather(3))/3
+                 kfather(1) = (k-1-9*kfather(3)-3*kfather(2))
+                 do idim=1,ndim
+                    x_inj(idim) = xg(ind_grid(ind_grid_part(j)),idim)-2.0D0*dx+2*dx*dble(kfather(idim))
+                 end do
+                 ! Only add if radius is within 2*R_inj_FB
+                 rr = SQRT((x_inj(1)-x_FB(j,1))**2+(x_inj(2)-x_FB(j,2))**2+(x_inj(3)-x_FB(j,3))**2)
+                 if (rr.lt.R_inj_FB(j)) then
+                    indcell_inj = nbors_father_cells(ind_grid_part(j),k)
+                    vol_FB(j) = vol_FB(j) + dx_loc**ndim*2**ndim
+                    rho_FB(j) = rho_FB(j) + unew(indcell_inj,1)*dx_loc**ndim*2**ndim
+                    if(metal) met_FB(j) = met_FB(j) + unew(indcell_inj,imetal)*dx_loc**ndim*2**ndim
+                 end if
+              end if
+           end do
+        end if
+     end do
+     
+     ! Normalize ISM properties 
+     do j=1,np
+        rho_FB(j) = rho_FB(j)/vol_FB(j)
+        met_FB(j) = met_FB(j)/vol_FB(j)
+     end do
+
+  end if
+  
+  ! Reset ejected mass, metallicity, thermal energy, radial momentum
+  do j=1,np
+     mloss(j)=0d0
+     mzloss(j)=0d0
+     ethermal(j)=0d0
+     pradial(j)=0.0d0
+  end do
+
+  ! For IR radiation trapping,
+  ! we use a fixed length to estimate the column density of gas
+  delta_x=200.*3d18
+  if(metal)then
+     tau_factor=kappa_IR*delta_x*scale_d/0.02
+  else
+     tau_factor=kappa_IR*delta_x*scale_d*z_ave
+  endif
+  rad_factor=ERAD/ESN
+
+  ! Compute stellar mass loss and feedback due to supernovae
+  if(f_w==0)then
+     do j=1,np
+        if(ok(j).and.flag_SN(j).gt.0)then
+
+           ! Infrared photon trapping boost
+           if(metal)then
+              tauIR=tau_factor*max(uold(indp(j),imetal),smallr)
+           else
+              tauIR=tau_factor*max(uold(indp(j),1),smallr)
+           endif
+           if(uold(indp(j),1)*scale_nH > 10.)then
+              RAD_BOOST=rad_factor*(1d0-exp(-tauIR))
+           else
+              RAD_BOOST=0.0
+           endif
+           
+           ! Make sure that we don't count SN feedback twice
+           eta_sn2   = eta_sn
+           if(sf_imf)then
+              if(mp(ind_part(j)).le.mstar_max)then
+                 if(mp(ind_part(j)).ge.msne_min) eta_sn2 = eta_ssn
+                 if(mp(ind_part(j)).lt.msne_min) eta_sn2 = 0.0
+              endif
+           endif
+           
+           ! Stellar mass loss
+           mejecta=eta_sn2*mp(ind_part(j))
+           mloss(j)=mloss(j)+mejecta/vol_FB(j)
+           
+           ! Metallicity
+           if(metal)then
+              zloss=yield+(1d0-yield)*zp(ind_part(j))
+              mzloss(j)=mzloss(j)+mejecta*zloss/vol_FB(j)
+           endif
+           
+           ! Reduce star particle mass ! Davide Martizzi
+           if(current_time.ge.t0) mp(ind_part(j))=mp(ind_part(j))-mejecta
+
+           ! Parameters of SN subgrid model
+           met_floor = MAX(2.0d-4,met_FB(j)/rho_FB(j)) ! the min metallicity for the model is 1d-2 Z_sun
+           rbreak=4.001*3.08d18/scale_l*(rho_FB(j)*scale_nH/100.)**(-0.429)*(met_floor/0.02)**(-0.077)
+           rnod=0.969*3.08d18/scale_l*(rho_FB(j)*scale_nH/100.)**(-0.330)*(met_floor/0.02)**(0.046)
+           !rbreak=7.97*3.08d18/scale_l*(rho_FB(j)*scale_nH/100.)**(-0.458)*(met_floor/0.02)**(-0.058)
+           !rnod=2.438*3.08d18/scale_l*(rho_FB(j)*scale_nH/100.)**(-0.349)*(met_floor/0.02)**(0.021)
+           alpha=-7.83*(rho_FB(j)*scale_nH/100.)**(0.024)*(met_floor/0.02)**(0.050)
+           rcool=3.021*3.08d18/scale_l*(rho_FB(j)*scale_nH/100.)**(-0.421)*(met_floor/0.02)**(-0.082)
+           rrise=5.472*3.08d18/scale_l*(rho_FB(j)*scale_nH/100.)**(-0.403)*(met_floor/0.02)**(-0.074)
+           !alpha=-11.3*(rho_FB(j)*scale_nH/100.)**(0.072)*(met_floor/0.02)**(0.070)
+           !rcool=6.35*3.08d18/scale_l*(rho_FB(j)*scale_nH/100.)**(-0.418)*(met_floor/0.02)**(-0.050)
+           !rrise=9.19*3.08d18/scale_l*(rho_FB(j)*scale_nH/100.)**(-0.439)*(met_floor/0.02)**(-0.067)           
+           
+           ! Radial momentum per SN
+           if (R_inj_FB(j)<rbreak/scale) then
+              pradial(j)=3.479830d42*(R_inj_FB(j)*scale/rnod)**1.5
+           else
+              pradial(j)=3.479830d42*(rbreak/rnod)**1.5
+           end if
+           ! Normalize by ejecta mass scaling and by volume
+           pradial(j) = pradial(j)*(mejecta*scale_d*scale_l**3/3.0d0/2.0d33)**0.5
+           pradial(j) = pradial(j)/(scale_d*scale_l**3*scale_v)/vol_FB(j)
+              
+           ! Thermal energy per SN 
+           if (R_inj_FB(j)<rcool/scale) then
+              ethermal(j)=7.1d50
+           else
+              if (rcool/scale <= R_inj_FB(j) .and. R_inj_FB(j) < rrise/scale) then
+                 ethermal(j)=7.1d50*(R_inj_FB(j)*scale/rcool)**alpha
+              else
+                 ethermal(j)=7.1d50*(rrise/rcool)**alpha
+              end if
+           end if
+           ! Normalize by ejecta mass and by volume
+           ethermal(j)=ethermal(j)*(mejecta/3.0d0/2.0d33)/vol_FB(j)/scale_v**2
+           
+           ! Kinetic energy of the star plus SN feedback
+           ekinetic(j)=0.5*mloss(j)*(vp(ind_part(j),1)**2 &
+                &          +vp(ind_part(j),2)**2 &
+                &          +vp(ind_part(j),3)**2) &
+                &          +0.5*pradial(j)**2/(rho_FB(j) + mloss(j))
+           
+           if(sf_log_properties) then
+              write(ilun,'(I10)',advance='no') 1
+              write(ilun,'(2I10,E24.12)',advance='no') idp(ind_part(j)),ilevel,mp(ind_part(j))
+              do idim=1,ndim
+                 write(ilun,'(E24.12)',advance='no') xp(ind_part(j),idim)
+              enddo
+              do idim=1,ndim
+                 write(ilun,'(E24.12)',advance='no') vp(ind_part(j),idim)
+              enddo
+              write(ilun,'(E24.12)',advance='no') unew(indp(j),1)
+              do ivar=2,nvar
+                 if(ivar.eq.ndim+2)then
+                    e=0.0d0
+                    do idim=1,ndim
+                       e=e+0.5*unew(ind_cell(i),idim+1)**2/max(unew(ind_cell(i),1),smallr)
+                    enddo
+#if NENER>0
+                    do irad=0,nener-1
+                       e=e+unew(ind_cell(i),inener+irad)
+                    enddo
+#endif
+#ifdef SOLVERmhd
+                    do idim=1,ndim
+                       e=e+0.125d0*(unew(ind_cell(i),idim+ndim+2)+unew(ind_cell(i),idim+nvar))**2
+                    enddo
+#endif
+                    ! Temperature
+                    uvar=(gamma-1.0)*(unew(ind_cell(i),ndim+2)-e)*scale_T2
+                 else
+                    uvar=unew(indp(j),ivar)
+                 endif
+                 write(ilun,'(E24.12)',advance='no') uvar/unew(indp(j),1)
+              enddo
+              write(ilun,'(I10)',advance='no') typep(ind_part(i))%tag
+              write(ilun,'(A1)') ' '
+           endif
+        end if
+        
+        ! Feedback loop!
+        ! Loop over 27 neighbor father cells
+        do k=1,3**ndim
+           ! Grid index associated to father cell
+           indgrid_inj=son(nbors_father_cells(ind_grid_part(j),k))
+           if (indgrid_inj.gt.0) then
+              ! If neighbor father cell has sons
+              ! include neighbor cell at the same level
+              kfather(3) = (k-1)/9
+              kfather(2) = (k-1-9*kfather(3))/3
+              kfather(1) = (k-1-9*kfather(3)-3*kfather(2))
+              do l=1,2**ndim ! loop on all cells in the neighbour father grid
+                 lson(3) = (l-1)/4
+                 lson(2) = (l-1-4*lson(3))/2
+                 lson(1) = (l-1-4*lson(3)-2*lson(2))
+                 do idim=1,ndim
+                    ! Grid center
+                    x_inj(idim) = xg(indgrid_inj,idim)
+                    ! Add offset with respect to grid center
+                    x_inj(idim) = x_inj(idim)+(dble(lson(idim))-0.5)*dx
+                 end do
+                 ! Only add if radius is within R_inj_FB
+                 rr = SQRT((x_inj(1)-x_FB(j,1))**2+(x_inj(2)-x_FB(j,2))**2+(x_inj(3)-x_FB(j,3))**2)
+                 if (rr.lt.R_inj_FB(j)) then
+                    indcell_inj=ncoarse+(l-1)*ngridmax+indgrid_inj
+                    drvec(1) = (x_inj(1)-x_FB(j,1))/(1.0d-20+rr)
+                    drvec(2) = (x_inj(2)-x_FB(j,2))/(1.0d-20+rr)
+                    drvec(3) = (x_inj(3)-x_FB(j,3))/(1.0d-20+rr)
+                    ! Update hydro variables
+                    !unew(indcell_inj,1) = rho_FB(j) + mloss(j)
+                    unew(indcell_inj,1) = unew(indcell_inj,1) + mloss(j)
+                    unew(indcell_inj,2) = unew(indcell_inj,2) + pradial(j)*drvec(1) + mloss(j)*vp(ind_part(j),1)
+                    unew(indcell_inj,3) = unew(indcell_inj,3) + pradial(j)*drvec(2) + mloss(j)*vp(ind_part(j),2)
+                    unew(indcell_inj,4) = unew(indcell_inj,4) + pradial(j)*drvec(3) + mloss(j)*vp(ind_part(j),3)
+                    unew(indcell_inj,5) = unew(indcell_inj,5) + ekinetic(j) + ethermal(j)*(1d0+RAD_BOOST) 
+                    !write(*,*)'internal', rho_FB(j), mloss(j), pradial(j), drvec(1), drvec(2), drvec(3), &
+                    !     & vp(ind_part(j),1), vp(ind_part(j),2), vp(ind_part(j),3), ekinetic(j), ethermal(j)
+                    ! Add metals
+                    !if(metal)unew(indcell_inj,imetal)=met_FB(j)+mzloss(j)
+                    if(metal)unew(indcell_inj,imetal)=unew(indcell_inj,imetal)+mzloss(j)
+                    !if(met_FB(j).lt.0.0d0)write(*,*)'BRO!',rho_FB(j),met_FB(j),mzloss(j),zp(ind_part(j))
+                    ! Add delayed cooling switch variable
+                    if(delayed_cooling)unew(indcell_inj,idelay)=unew(indcell_inj,idelay)+mloss(j)
+                 end if
+              end do
+           else
+              ! If neighbor father cell does not have sons
+              ! include neighbor father cell at lower level
+              kfather(3) = (k-1)/9
+              kfather(2) = (k-1-9*kfather(3))/3
+              kfather(1) = (k-1-9*kfather(3)-3*kfather(2))
+              do idim=1,ndim
+                 x_inj(idim) = xg(ind_grid(ind_grid_part(j)),idim)-2.0D0*dx+2*dx*dble(kfather(idim))
+              end do
+              ! Only add if radius is within 2*R_inj_FB
+              rr = SQRT((x_inj(1)-x_FB(j,1))**2+(x_inj(2)-x_FB(j,2))**2+(x_inj(3)-x_FB(j,3))**2)
+              if (rr.lt.R_inj_FB(j)) then
+                 indcell_inj= nbors_father_cells(ind_grid_part(j),k)
+                 drvec(1) = (x_inj(1)-x_FB(j,1))/(1.0d-20+rr)
+                 drvec(2) = (x_inj(2)-x_FB(j,2))/(1.0d-20+rr)
+                 drvec(3) = (x_inj(3)-x_FB(j,3))/(1.0d-20+rr)
+                 ! Update hydro variables
+                 !unew(indcell_inj,1) = rho_FB(j) + mloss(j)
+                 unew(indcell_inj,1) = unew(indcell_inj,1) + mloss(j)
+                 unew(indcell_inj,2) = unew(indcell_inj,2) + pradial(j)*drvec(1) + mloss(j)*vp(ind_part(j),1)
+                 unew(indcell_inj,3) = unew(indcell_inj,3) + pradial(j)*drvec(2) + mloss(j)*vp(ind_part(j),2)
+                 unew(indcell_inj,4) = unew(indcell_inj,4) + pradial(j)*drvec(3) + mloss(j)*vp(ind_part(j),3)
+                 unew(indcell_inj,5) = unew(indcell_inj,5) + ekinetic(j) + ethermal(j)*(1d0+RAD_BOOST) 
+                 !write(*,*)'external', rho_FB(j), mloss(j), pradial(j), drvec(1), drvec(2), drvec(3), &
+                 !     & vp(ind_part(j),1), vp(ind_part(j),2), vp(ind_part(j),3), ekinetic(j), ethermal(j)
+                 ! Add metals
+                 !if(metal)unew(indcell_inj,imetal)=met_FB(j)+mzloss(j)
+                 if(metal)unew(indcell_inj,imetal)=unew(indcell_inj,imetal)+mzloss(j)
+                 !if(met_FB(j).lt.0.0d0)write(*,*)'BROBRO!',rho_FB(j),met_FB(j),mzloss(j),zp(ind_part(j))
+                 ! Add delayed cooling switch variable
+                 if(delayed_cooling)unew(indcell_inj,idelay)=unew(indcell_inj,idelay)+mloss(j)
+              end if
+           end if
+        end do
+        ! End Feedback loop!
+     end do
+  endif
+
+end subroutine adp_feedbk
 #endif
 !################################################################
 !################################################################

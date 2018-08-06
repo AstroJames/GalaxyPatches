@@ -333,10 +333,10 @@ recursive subroutine amr_step(ilevel,icount)
 #endif
   end if
 
-  ! Thermal feedback from stars
+  ! Thermal/kinetic feedback from stars
 #if NDIM==3
                                call timer('feedback','start')
-  if(hydro.and.star.and.eta_sn>0)call thermal_feedback(ilevel)
+  if(hydro.and.star.and.eta_sn>0)call SN_feedback(ilevel) ! Davide Martizzi: used to be thermal_feedback
 #endif
 
   ! Density threshold or Bondi accretion onto sink particle
@@ -421,6 +421,11 @@ recursive subroutine amr_step(ilevel,icount)
     if(neq_chem.or.cooling.or.T2_star>0.0)call cooling_fine(ilevel)
   endif
 #endif
+
+  !---------------
+  ! Davide Martizzi: Enforce floor/ceilings
+  !---------------
+  if(hydro) call ceiling_fine(ilevel)
 
   !---------------
   ! Move particles

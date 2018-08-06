@@ -16,26 +16,29 @@ subroutine gravana(x,f,dx,ncell)
   ! f(i,1:ndim) is the gravitational acceleration in user units.
   !================================================================
   integer::idim,i
+  integer::nx_loc,ny_loc,nz_loc
   real(dp)::scale_m,scale_l,scale_t,scale_d,scale_v,scale_nH,scale_T2
+  real(dp)::scale
+  real(dp),dimension(1:3)::skip_loc
   real(dp)::rcirc,zcirc,Rspher,rx,ry,rz,wx,wy,wz
   real(dp)::rho_s,R_s,Mb,hb,Mds,Mdg,hr,hz,Mdtot
   real(dp)::f_tot_i,f_nfw_i,f_bulge_i,f_disc_i
-  real(dp)::pi,GG
-  
-  pi=ACOS(-1.0D0)
+  real(dp)::pi,fourpi,GG
   
   ! Conversion factor from user units to cgs units
   call units(scale_l,scale_t,scale_d,scale_v,scale_nH,scale_T2)
   scale_m = scale_d*scale_l**3
-  
-  ! Constant vector
-  if(gravity_type==1)then
-     do idim=1,ndim
-        do i=1,ncell
-           f(i,idim)=gravity_params(idim)
-        end do
-     end do
-  end if
+
+  ! Local constants
+  nx_loc=nx; ny_loc=ny; nz_loc=nz
+  if(ndim>0)nx_loc=(icoarse_max-icoarse_min+1)
+  if(ndim>1)ny_loc=(jcoarse_max-jcoarse_min+1)
+  if(ndim>2)nz_loc=(kcoarse_max-kcoarse_min+1)
+  scale=boxlen/dble(nx_loc)
+
+  pi=ACOS(-1.0D0)
+  fourpi=4.D0*ACOS(-1.0D0)*scale
+  if(cosmo)fourpi=1.5D0*omega_m*aexp*scale
 
   ! Davide Martizzi: Model of NFW Halo + Bulge + Disc
   ! this section is for a non self-gravitating setup
@@ -65,34 +68,34 @@ subroutine gravana(x,f,dx,ncell)
         wx = 1.0 !TANH(-(ABS(rx)-0.9*boxlen/2))
         wy = 1.0 !TANH(-(ABS(ry)-0.9*boxlen/2))
         wz = 1.0 !TANH(-(ABS(rz)-0.9*boxlen/2))
-        if(ABS(rx)>0.9*boxlen/2) rx = 0.9*boxlen/2*rx/ABS(rx)
-        if(ABS(ry)>0.9*boxlen/2) ry = 0.9*boxlen/2*ry/ABS(ry)
-	if(ABS(rz)>0.9*boxlen/2) rz = 0.9*boxlen/2*rz/ABS(rz)
+        !if(ABS(rx)>0.95*boxlen/2) rx = 0.95*boxlen/2*rx/ABS(rx)
+        !if(ABS(ry)>0.95*boxlen/2) ry = 0.95*boxlen/2*ry/ABS(ry)
+	!if(ABS(rz)>0.95*boxlen/2) rz = 0.95*boxlen/2*rz/ABS(rz)
         
         rcirc=SQRT(rx*rx+ry*ry)
         zcirc=rz
         Rspher=SQRT(rcirc**2+zcirc**2)
 
         ! Force along x axis
-        f_nfw_i=4.0*pi*GG*rho_s*(R_s**3)*(rx/(Rspher+1.0d-10)**2/(R_s+Rspher)-rx*log(1+Rspher/R_s+1.0d-10)/(Rspher+1.0d-10)**3)
+        f_nfw_i=4.0*pi*GG*rho_s*(R_s**3)*(rx/(Rspher+1.0d-10)**2/(R_s+Rspher)-rx*LOG(1+(Rspher+1.0d-10)/R_s)/(Rspher+1.0d-10)**3)
         f_bulge_i=-GG*Mb*rx/SQRT(Rspher**2+hb**2)**3
         f_disc_i=-GG*(Mdtot)*rx/SQRT(rcirc**2+(hr+SQRT(zcirc**2+hz**2))**2)**3
         f_tot_i = f_nfw_i + f_bulge_i + f_disc_i
-        f(i,1)=f_tot_i*wx*wy*wz ! code units
+        f(i,1)=f_tot_i*wx*wy*wz !*(dx) ! code units
         
         ! Force along y axis
-        f_nfw_i=4.0*pi*GG*rho_s*(R_s**3)*(ry/(Rspher+1.0d-10)**2/(R_s+Rspher)-ry*log(1+Rspher/R_s+1.0d-10)/(Rspher+1.0d-10)**3)
+        f_nfw_i=4.0*pi*GG*rho_s*(R_s**3)*(ry/(Rspher+1.0d-10)**2/(R_s+Rspher)-ry*LOG(1+(Rspher+1.0d-10)/R_s)/(Rspher+1.0d-10)**3)
         f_bulge_i=-GG*Mb*ry/SQRT(Rspher**2+hb**2)**3
 	f_disc_i=-GG*(Mdtot)*ry/SQRT(rcirc**2+(hr+SQRT(zcirc**2+hz**2))**2)**3
         f_tot_i = f_nfw_i + f_bulge_i + f_disc_i
-        f(i,2)=f_tot_i*wx*wy*wz ! code units
+        f(i,2)=f_tot_i*wx*wy*wz !*(dx) ! code units
         
         ! Force along z axis
-        f_nfw_i=4.0*pi*GG*rho_s*(R_s**3)*(rz/(Rspher+1.0d-10)**2/(R_s+Rspher)-rz*log(1+Rspher/R_s+1.0d-10)/(Rspher+1.0d-10)**3)
+        f_nfw_i=4.0*pi*GG*rho_s*(R_s**3)*(rz/(Rspher+1.0d-10)**2/(R_s+Rspher)-rz*LOG(1+(Rspher+1.0d-10)/R_s)/(Rspher+1.0d-10)**3)
         f_bulge_i=-GG*Mb*rz/SQRT(Rspher**2+hb**2)**3
         f_disc_i=-GG*(Mdtot)*zcirc*(hr+SQRT(zcirc**2+hz**2))/SQRT(zcirc**2+hz**2)/SQRT(rcirc**2+(hr+SQRT(zcirc**2+hz**2))**2)**3
         f_tot_i = f_nfw_i + f_bulge_i + f_disc_i
-        f(i,3)=f_tot_i*wx*wy*wz ! code units
+        f(i,3)=f_tot_i*wx*wy*wz !*(dx) ! code units
      end do
   end if
 

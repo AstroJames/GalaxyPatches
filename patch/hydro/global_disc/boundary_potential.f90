@@ -21,7 +21,7 @@ subroutine make_boundary_force(ilevel)
   real(dp),dimension(1:3)::gs,skip_loc
   real(dp),dimension(1:twotondim,1:3)::xc
   real(dp),dimension(1:nvector,1:ndim),save::xx
-  real(dp),dimension(1:nvector,1:ndim),save::ff
+  real(dp),dimension(1:nvector,1:ndim),save::ff !,fana ! Davide Martizzi
 
   if(.not. simple_boundary)return
   if(verbose)write(*,111)ilevel
@@ -116,12 +116,12 @@ subroutine make_boundary_force(ilevel)
            end do
 
            ! Wall and free boundary conditions
-           if((boundary_type(ibound)/10).ne.2)then
+           if((boundary_type(ibound)/10).ne.2)then ! Davide Martizzi: below
 
               ! Gather reference hydro variables
               do ivar=1,ndim
                  do i=1,ngrid
-                    ff(i,ivar)=f(ind_cell_ref(i),ivar)
+                    ff(i,ivar)=f(ind_cell_ref(i),ivar)   
                  end do
               end do
               ! Scatter to boundary region
@@ -129,6 +129,20 @@ subroutine make_boundary_force(ilevel)
                  switch=gs(ivar)
                  do i=1,ngrid
                     f(ind_cell(i),ivar)=ff(i,ivar)*switch
+                 end do
+              end do
+
+              ! Gather reference hydro variables
+              do ivar=1,ndim
+                 do i=1,ngrid
+                    ff(i,ivar)=fana(ind_cell_ref(i),ivar)
+                 end do
+              end do
+              ! Scatter to boundary region
+              do ivar=1,ndim
+                 switch=gs(ivar)
+                 do i=1,ngrid
+                    fana(ind_cell(i),ivar)=ff(i,ivar)*switch
                  end do
               end do
 

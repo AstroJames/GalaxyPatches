@@ -432,7 +432,7 @@ subroutine evol_single_cell(astart,aend,dasura,h,omegab,omega0,omegaL, &
         err_T2=abs(T2_right-T2_left)/T2_left
         niter=niter+1
      end do
-     if (niter > 100) then
+     if (niter > 100) then !Davide Martizzi
         write(*,*) 'ERROR in evol_single_cell : too many iterations'
         STOP
      endif
@@ -476,7 +476,7 @@ subroutine compute_J0min(h,omegab,omega0,omegaL,J0min_in)
      err_J0min=abs(J0min_right-J0min_left)/J0min_left
      niter=niter+1
   enddo
-  if (niter > 100) then
+  if (niter > 100) then !Davide Martizzi
      write(*,*) 'ERROR in compute_J0min : too many iterations'
      STOP
   endif
@@ -485,6 +485,7 @@ end subroutine compute_J0min
 !=======================================================================
 subroutine solve_cooling(nH,T2,zsolar,boost,dt,deltaT2,ncell)
 !=======================================================================
+  use hydro_parameters, only: smallr, smallc, cceil
   implicit none
   integer::ncell
   real(kind=8)::dt
@@ -504,7 +505,7 @@ subroutine solve_cooling(nH,T2,zsolar,boost,dt,deltaT2,ncell)
   logical::tau_negative
 
   ! Simple model for photoelectric heating
-  real(dp)::SNrate,dcgs,t_s,heating_peh
+  real(dp)::heating_peh
   real(dp)::scale_nH,scale_T2,scale_l,scale_d,scale_t,scale_v
 
   ! Conversion factor from user units to cgs units
@@ -546,10 +547,10 @@ subroutine solve_cooling(nH,T2,zsolar,boost,dt,deltaT2,ncell)
   ! Loop over active cells
   iter=0
   n=ncell
-  do while(n>0)
+  do while(n>0) ! Davide Martizzi
 
      iter=iter+1
-     if (iter > 500) then
+     if (iter > 500) then !Davide Martizzi
         write(*,*) 'Too many iterations in solve_cooling',iter,n
         do i=1,n
            write(*,*)i,tau(ind(i)),T2(ind(i)),nH(ind(i)),i_nH(ind(i))
@@ -561,7 +562,7 @@ subroutine solve_cooling(nH,T2,zsolar,boost,dt,deltaT2,ncell)
      do i=1,n
         facT=log10(tau(ind(i)))
 
-        if(facT.le.logT2max)then
+        if(facT.le.logT2max)then ! Davide Martizzi
 
            i_T2=MIN(MAX(int((facT-table%T2(1))*dlog_T2)+1,1),table%n2-1)
            yy=facT-table%T2(i_T2)
@@ -590,14 +591,11 @@ subroutine solve_cooling(nH,T2,zsolar,boost,dt,deltaT2,ncell)
            heat=10d0**(fa+alpha*yy+beta*yy2+gamma*yy3)
            heat_prime=heat/tau(ind(i))*(alpha+2d0*beta*yy+3d0*gamma*yy2)
 
-           ! Add a term for photoelectric heating from eq. 22 of Li et al. 2015.
-           if(peh_heat.and.nH(ind(i)).ge.n_star.and.tau(ind(i)).le.2d4) then
-              dcgs=nH(ind(i))/scale_nH*scale_d ! in cgs
-              t_s=t_star*(1d9*365.*24.*3600.) ! in s
-              SNrate=(dcgs/2.0d35/t_s)*(3.08d21**3)*(1.0d6*365.*24.*3600.)/100.
-              heating_peh=1.4d-26*SNrate ! heating rate per unit nH in cgs
-           else
-              heating_peh=0.0d0
+           ! Davide Martizzi: photoelectric heating a la Draine textbook
+           if (peh_heat) then
+              heating_peh = nH(ind(i))*1.4d-26 !heating rate per unit volume in cgs
+           else 
+              heating_peh = 0.0d0
            end if
 
            ! Compton cooling
@@ -1163,7 +1161,7 @@ subroutine cmp_cooling(T2,nH,t_rad_spec,h_rad_spec,cool_tot,heat_tot,cool_com,he
      err_mu=ABS(err_mu)
      niter=niter+1
   end do
-  if (niter > 50) then
+  if (niter > 500) then !Davide Martizzi
      write(*,*) 'ERROR in cmp_cooling : too many iterations.'
      STOP
   endif

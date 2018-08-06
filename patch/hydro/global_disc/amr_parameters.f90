@@ -165,11 +165,13 @@ module amr_parameters
   real(dp)::mass_star_max=120.0D0 ! Maximum mass of a star in solar mass
   real(dp)::mass_sne_min=10.0D0   ! Minimum mass of a single supernova in solar mass
   logical::momentum_feedback=.false. ! Use supernovae momentum feedback if cooling radius not resolved
+  logical::adaptive_feedback=.false. ! Davide Martizzi: use adaptive SN feedback inspired by Martizzi et al. 2015
 
   logical ::self_shielding=.false.
   logical ::pressure_fix=.false.
   logical ::nordlund_fix=.true.
   logical ::cooling=.false.
+  logical ::peh_heat=.false.
   logical ::neq_chem=.false.  ! Non-equilbrium chemistry activated
   logical ::isothermal=.false.
   logical ::metal=.false.

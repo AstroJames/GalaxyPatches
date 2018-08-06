@@ -3,6 +3,7 @@
 !================================================================
 !================================================================
 subroutine condinit(x,u,dx,nn)
+  use cooling_module, only: mH, kB 
   use amr_parameters
   use hydro_parameters
   use poisson_parameters
@@ -84,6 +85,7 @@ subroutine condinit(x,u,dx,nn)
     phi0 = phi(rcirc,0.0d0,rho_s,R_s,Mb,hb,Mds,Mdg,hr,hz,Mdtot)
     ! Set density 
     rhocell = rho0gas/scale_d*EXP(-(rcirc/hr)**2)*EXP(-(phi1-phi0)/Tcell)
+
     if(rhocell < rhoamb/scale_d) then
        ! Ambient density
        rhocell = rhoamb/scale_d
@@ -107,7 +109,7 @@ subroutine condinit(x,u,dx,nn)
 #endif
 #if NDIM>2
     ! vz
-    q(i:nn,3)=0.0d0
+    q(i,4)=0.0d0
 #endif
     ! pressure 
     q(i,ndim+2)=Pcell
@@ -175,9 +177,8 @@ real*8 FUNCTION phi(rcirc,zcirc,rho_s,R_s,Mb,hb,Mds,Mdg,hr,hz,Mdtot)
   GG=1.0
 
   Rspher=SQRT(rcirc**2+zcirc**2)  
-  phi_nfw_i = -4.0*pi*GG*rho_s*(R_s**2)*LOG(1+Rspher/R_s+1.0d-10)/(Rspher/R_s+1.0d-10)
+  phi_nfw_i = -4.0*pi*GG*rho_s*(R_s**3)*LOG(1+(Rspher+1.0d-10)/R_s)/(Rspher+1.0d-10)
   phi_bulge_i = -GG*Mb/SQRT(Rspher**2+hb**2)
-  !phi_disc_i = -GG*(Mdtot)/SQRT((rcirc+hr)**2+(ABS(zcirc)+hz)**2)
   phi_disc_i = -GG*(Mdtot)/SQRT(rcirc**2+(hr+SQRT(zcirc**2+hz**2))**2)
   phi_tot_i = phi_nfw_i + phi_bulge_i + phi_disc_i ! code units
   phi = phi_tot_i
@@ -188,36 +189,12 @@ end FUNCTION phi
 !================================================================
 !================================================================
 !================================================================
-real*8 FUNCTION minusdphidz(rcirc,zcirc,rho_s,R_s,Mb,hb,Mds,Mdg,hr,hz,Mdtot)
-  implicit none
-  real*8::rcirc,zcirc,Rspher,rho_s,R_s,Mb,hb,Mds,Mdg,hr,hz,Mdtot
-  real*8::f_tot_i,f_nfw_i,f_bulge_i,f_disc_i
-  real*8::pi,GG
-
-  pi=ACOS(-1.0D0)
-  GG=1.0
-  
-  Rspher=SQRT(rcirc**2+zcirc**2)
-  f_nfw_i=4.0*pi*GG*rho_s*(R_s**3)*(zcirc/(Rspher+1.0d-10)**2/(R_s+Rspher)-zcirc*LOG(1+Rspher/R_s+1.0d-10)/(Rspher+1.0d-10)**3)
-  f_bulge_i=-GG*Mb*zcirc/SQRT(Rspher**2+hb**2)**3
-  f_disc_i=-GG*(Mdtot)*zcirc*(hr+SQRT(zcirc**2+hz**2))/SQRT(zcirc**2+hz**2)/SQRT(rcirc**2+(hr+SQRT(zcirc**2+hz**2))**2)**3
-  f_tot_i = f_nfw_i + f_bulge_i + f_disc_i ! code units
-  minusdphidz = f_tot_i
-  
-  return
-end FUNCTION minusdphidz
-!================================================================
-!================================================================
-!================================================================
-!================================================================
-real*8 FUNCTION vcirc(rcirc,zcirc,rho_s,R_s,Mb,hb,Mds,Mdg,hr,hz,Mdtot,Tmu0gas,sw)
+real*8 FUNCTION vcirc(rcirc,zcirc,rho_s,R_s,Mb,hb,Mds,Mdg,hr,hz,Mdtot,TT,sw)
   implicit none
   integer::sw
-  real*8::rcirc,zcirc,Rspher,rho_s,R_s,Mb,hb,Mds,Mdg,hr,hz,Mdtot,Tmu0gas
-  real*8::fr_tot_i,fr_nfw_i,fr_bulge_i,fr_disc_i
-  real*8::TT,fz_tot_i,rho_term,T_term
-  real*8::frz_tot_i,frz_nfw_i,frz_bulge_i,frz_disc_i
-  real*8::minusdphidz,phi
+  real*8::rcirc,zcirc,Rspher,rho_s,R_s,Mb,hb,Mds,Mdg,hr,hz,Mdtot,TT
+  real*8::fr_tot_i,fr_nfw_i,fr_bulge_i,fr_disc_i,rho_term,T_term
+  real*8::phi
   real*8::pi,GG,ww
 
   pi=ACOS(-1.0D0)
@@ -225,14 +202,12 @@ real*8 FUNCTION vcirc(rcirc,zcirc,rho_s,R_s,Mb,hb,Mds,Mdg,hr,hz,Mdtot,Tmu0gas,sw
  
   ! Term 1: radial gradient of potential
   Rspher = rcirc ! the term for this model is in the midplane
-  fr_nfw_i=4.0*pi*GG*rho_s*(R_s**3)*(-rcirc/(Rspher+1.0d-10)**2/(R_s+Rspher)+rcirc*LOG(1+Rspher/R_s+1.0d-10)/(Rspher+1.0d-10)**3)
+  fr_nfw_i=4.0*pi*GG*rho_s*(R_s**3)*(-rcirc/(Rspher+1.0d-10)**2/(R_s+Rspher)+rcirc*LOG(1+(Rspher+1.0d-10)/R_s)/(Rspher+1.0d-10)**3)
   fr_bulge_i=GG*Mb*rcirc/SQRT(Rspher**2+hb**2)**3
   fr_disc_i=GG*(Mdtot)*rcirc/SQRT(rcirc**2+(hr+hz)**2)**3
   fr_tot_i = fr_nfw_i + fr_bulge_i + fr_disc_i ! code units
-  
-  
+    
   ! Term 2: radial gradient of pressure (density term)
-  TT = Tmu0gas
   if(sw == 0) rho_term = -2*TT*rcirc/hr**2
   if(sw == 1) rho_term = 0.0d0
   
@@ -241,7 +216,7 @@ real*8 FUNCTION vcirc(rcirc,zcirc,rho_s,R_s,Mb,hb,Mds,Mdg,hr,hz,Mdtot,Tmu0gas,sw
   
   if(fr_tot_i+rho_term+T_term < 0)write(*,*)fr_tot_i,rho_term,T_term
   
-  ww = 1.0 !TANH(-(rcirc-4*hr))*TANH(-(ABS(zcirc)-4*hz))
+  ww = 1.0 
   vcirc = SQRT((fr_tot_i+rho_term+T_term)*rcirc)*ww ! code units
 
   return

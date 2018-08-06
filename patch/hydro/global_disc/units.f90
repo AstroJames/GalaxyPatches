@@ -15,7 +15,7 @@ subroutine units(scale_l,scale_t,scale_d,scale_v,scale_nH,scale_T2)
   if(cosmo) scale_d = omega_m * rhoc *(h0/100.)**2 / aexp**3
 
   ! scale_t converts time from user units into seconds
-  scale_t = 1.0/SQRT(6.67e-8*scale_d) ! dynamical time 
+  scale_t = 1.0/SQRT(6.67d-8*scale_d) ! dynamical time 
   if(cosmo) scale_t = aexp**2 / (h0*1d5/3.08d24)
 
   ! scale_l converts distance from user units into cm

@@ -49,7 +49,8 @@ subroutine newdt_fine(ilevel)
 
   ! Maximum time step
   dtnew(ilevel)=boxlen/smallc
-  if(poisson.and.gravity_type<=0)then
+  !if(poisson.and.gravity_type<=0)then
+  if(poisson)then ! Davide Martizzi
      fourpi=4.0d0*ACOS(-1.0d0)
      if(cosmo)fourpi=1.5d0*omega_m*aexp
      if (sink)then
@@ -173,11 +174,7 @@ subroutine newdt_fine(ilevel)
 #endif
   end if
 
-  ! Davide Martizzi: enforce ceilings
-  if(hydro)then 
-     call ceiling_fine(ilevel)
-     call courant_fine(ilevel)
-  end if
+  if(hydro)call courant_fine(ilevel)
 
 111 format('   Entering newdt_fine for level ',I2)
 

@@ -73,7 +73,7 @@ subroutine courant_fine(ilevel)
         if(poisson)then
            do idim=1,ndim
               do i=1,nleaf
-                 gg(i,idim)=f(ind_leaf(i),idim)
+                 gg(i,idim)=f(ind_leaf(i),idim)+fana(ind_leaf(i),idim) ! Davide Martizzi
               end do
            end do
         end if
@@ -321,14 +321,25 @@ subroutine ceiling_fine(ilevel)
 
         ! Gather hydro variables and enforce ceiling
         do i=1,nleaf
-           !write(*,*)smallr, smallc, cceil, uold(ind_leaf(i),1), uold(ind_leaf(i),2)/uold(ind_leaf(i),1), uold(ind_leaf(i),3)/uold(ind_leaf(i),1), uold(ind_leaf(i),4)/uold(ind_leaf(i),1)
            do ivar=1,nvar
-              if (ivar.eq.1)uold(ind_leaf(i),1)=max(uold(ind_leaf(i),1),smallr)
+              if(ISNAN(uold(ind_leaf(i),ivar)).and.ivar.le.ndim+2)then
+                 uold(ind_leaf(i),1) = smallr
+                 uold(ind_leaf(i),2) = 0.0d0
+                 uold(ind_leaf(i),3) = 0.0d0
+                 uold(ind_leaf(i),4) = 0.0d0
+                 uold(ind_leaf(i),ndim+2) = smallr*smallc**2/gamma/(gamma-1)
+                 if(metal)uold(ind_leaf(i),imetal) = smallr**2
+              end if
+              if (ivar.eq.1)then
+                 if (metal.and.uold(ind_leaf(i),1).lt.smallr) then
+                    uold(ind_leaf(i),imetal) = uold(ind_leaf(i),imetal)*smallr/uold(ind_leaf(i),1)
+                 end if
+                 uold(ind_leaf(i),1)=max(uold(ind_leaf(i),1),smallr)
+              end if
               if (ivar.eq.2.or.ivar.eq.3.or.ivar.eq.4)then
                  vv = ABS(uold(ind_leaf(i),ivar)/uold(ind_leaf(i),1))
                  if (vv.gt.3.333*cceil) then
                     uold(ind_leaf(i),ndim+2)=uold(ind_leaf(i),ndim+2)-0.5*uold(ind_leaf(i),ivar)**2/uold(ind_leaf(i),1)
-                    !if (uold(ind_leaf(i),ndim+2).lt.0.0) uold(ind_leaf(i),ndim+2) = uold(ind_leaf(i),1)*smallc**2/gamma/(gamma-1.0)
                     uold(ind_leaf(i),ivar)=uold(ind_leaf(i),ivar)/ABS(uold(ind_leaf(i),ivar))*uold(ind_leaf(i),1)*3.333*cceil
                     uold(ind_leaf(i),ndim+2)=uold(ind_leaf(i),ndim+2)+0.5*uold(ind_leaf(i),1)*(3.333*cceil)**2
                  end if
@@ -336,9 +347,12 @@ subroutine ceiling_fine(ilevel)
               if (ivar.eq.ndim+2)then
                  ekin = 0.5*(uold(ind_leaf(i),2)**2+uold(ind_leaf(i),3)**2+uold(ind_leaf(i),4)**2)/uold(ind_leaf(i),1)
                  eth = uold(ind_leaf(i),ivar)-ekin
-                 if (eth .lt. 0.0) eth = uold(ind_leaf(i),1)*smallc**2/gamma/(gamma-1.0)
+                 if (eth .lt. uold(ind_leaf(i),1)*smallc**2/gamma/(gamma-1)) eth = uold(ind_leaf(i),1)*smallc**2/gamma/(gamma-1)
                  if (eth .gt. uold(ind_leaf(i),1)*cceil**2/gamma/(gamma-1)) eth = uold(ind_leaf(i),1)*cceil**2/gamma/(gamma-1)
-                uold(ind_leaf(i),ivar) = eth+ekin
+                 uold(ind_leaf(i),ivar) = eth+ekin
+              end if
+              if (metal.and.ivar.eq.imetal)then
+                 uold(ind_leaf(i),ivar) = max(uold(ind_leaf(i),ivar),smallr**2)
               end if
            end do
         end do

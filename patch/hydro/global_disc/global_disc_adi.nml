@@ -1,34 +1,36 @@
 &RUN_PARAMS 
 hydro=.true.
 poisson=.true.
+pic=.true.
 ncontrol=1
-nrestart=0
-nremap=1
-nsubcycle=10*1
+nrestart=20
+nremap=10
+nsubcycle=10*2
 static=.false.
 /
 
 &AMR_PARAMS 
-levelmin=5
-levelmax=8
-ngridmax=5000000
-nexpand=4,4,4
-!nexpand=6
-boxlen=10.0
+levelmin=8
+!levelmax=12
+levelmax=11
+ngridmax=2000000
+npartmax=2000000
+nexpand=4,4,4,4,4
+boxlen=4.192
 /
 
 &POISSON_PARAMS
-epsilon=1.d-4
+epsilon=1.d-3
 gravity_type=2
-gas_sg=.false.
-gravity_params(1)=4.66932157214d-25
-gravity_params(2)=9.11963164558
-gravity_params(3)=0.0d0
+gas_sg=.true.
+gravity_params(1)=4.22343577725d-25
+gravity_params(2)=10.8957719452
+gravity_params(3)=1.0d-3
 gravity_params(4)=1.0d-6
-gravity_params(5)=5.0d9
-gravity_params(6)=1.0d10
-gravity_params(7)=1.6
-gravity_params(8)=0.8
+gravity_params(5)=5.0d8
+gravity_params(6)=1.0d9
+gravity_params(7)=0.4
+gravity_params(8)=0.2
 /
 
 &INIT_PARAMS
@@ -36,8 +38,7 @@ gravity_params(8)=0.8
 /
 
 &BOUNDARY_PARAMS
-no_inflow=.true.
-nboundary = 6
+no_inflow=.false.
 nboundary=6
 ibound_min=-1,+1,-1,-1,-1,-1
 ibound_max=-1,+1,+1,+1,+1,+1
@@ -46,59 +47,76 @@ jbound_max= 0, 0,-1,+1,+1,+1
 kbound_min= 0, 0, 0, 0,-1,+1
 kbound_max= 0, 0, 0, 0,-1,+1
 bound_type= 2, 2, 2, 2, 2, 2
-!nboundary = 2
-!ibound_min= 0, 0
-!ibound_max= 0, 0
-!jbound_min= 0, 0
-!jbound_max= 0, 0
-!kbound_min=-1, 1
-!kbound_max=-1, 1
-!bound_type= 2,  2
 /
 
 &REFINE_PARAMS 
-!interpol_var=0
-!interpol_type=2
-!err_grad_d=0.01
-!floor_d=1.0d10
-!x_refine=500.0,500.0,500.0,500.0
-!y_refine=500.0,500.0,500.0,500.0
-!z_refine=500.0,500.0,500.0,500.0
-!dx_refine=500.0,500.0,500.0,500.0
-!dy_refine=500.0,500.0,500.0,500.0
-!dz_refine=500.0,180.0,140.0,100.0
+floor_d=1.0d-6
+floor_p=1.0d-5
 interpol_var=0
-interpol_type=2
-err_grad_p=0.1
+interpol_type=1
+mass_sph=4.896698635306296d-7
+!mass_sph=3.917358908245037d-6
+! mass based refinement
+m_refine=8.,8.,8.,8.,8.,
+! region refinement
+!x_refine = 2.048,2.048,2.048,2.048,2.048
+!y_refine = 2.048,2.048,2.048,2.048,2.048
+!z_refine = 2.048,2.048,2.048,2.048,2.048
+!r_refine = 1.280,1.184,1.088,0.992,0.800
+!a_refine = 1.0,1.0,1.0,1.0,1.0
+!b_refine = 0.5,0.5,0.5,0.5,0.5
 /
 
 &OUTPUT_PARAMS
-delta_tout=2.0e-3
-tend=1.
+delta_tout=1.0d-2
+tend=10.
 /
 
 &HYDRO_PARAMS
 gamma=1.6667
-courant_factor=0.4
+courant_factor=0.45
 scheme='muscl'
 riemann='hllc'
-slope_type=2
+slope_type=1
 pressure_fix=.true.
-beta_fix=0.05
-difmag=0.0
-smallc=1.0d-15
-smallr=1.0d-15
+beta_fix=1.0d-1
+difmag=1.0d-1
+smallr=1.0d-10
+smallc=3.0d-2
+cceil=1.0d2
 /
 
 &COOLING_PARAMS
-cooling=.false.
-metal=.false.
+cooling=.true.
+peh_heat=.true.
+!J21=1.0
+!a_spec=1.0
+!haardt_madau=.true.
+metal=.true.
+self_shielding=.false.
 ! In solar metallicities.
-!z_ave=1.0
+z_ave=1.0
+/
+
+&SF_PARAMS
+m_star=6.4
+eps_star=1.0d-2
+n_star=1.0d2
+g_star=1.6667
+T2_star=7.69d1
+!T2_star=1.538d2
+/
+
+&FEEDBACK_PARAMS
+adaptive_feedback=.true.
+delayed_cooling=.false.
+eta_sn=0.06
+yield=0.2
+t_sne=10.0
 /
 
 &GD_PARAMS
-rho0gas=9.02862300533d-22
-rhoamb=1.31578947368d-34
-Tmu0gas=3.0d4
+rho0gas=1.8083344659d-21
+rhoamb=1.092105263157895d-25
+Tmu0gas=1.850d3
 /

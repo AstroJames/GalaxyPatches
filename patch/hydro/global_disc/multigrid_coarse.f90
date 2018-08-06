@@ -22,11 +22,14 @@ subroutine full_multigrid(icount)
   ! Compute potential and acceleration for all coarser levels
   do ilevel=1,levelmin-1
      call multigrid_coarse(ilevel,icount)
-     call force_fine(ilevel,icount)
-   end do
+     call force_fine(ilevel,icount,1) ! Davide Martizzi: added one switch
+  end do
 
-   ! Compute potential at levelmin
-   call multigrid_coarse(levelmin,icount)
+  ! Davide Martizzi: Add analytical force
+  
+
+  ! Compute potential at levelmin
+  call multigrid_coarse(levelmin,icount)
 
 end subroutine full_multigrid
 !###########################################################
