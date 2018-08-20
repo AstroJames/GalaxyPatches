@@ -5,18 +5,28 @@
 [5]: https://bitbucket.org/vperret/dice
 [6]: https://bitbucket.org/ohahn/music
 
-## This is the [ramses](https://bitbucket.org/rteyssie/ramses) bitbucket repository.
+## This is the [ramses](https://bitbucket.org/dmartizzi/ramses) bitbucket repository.
 
 Ramses is an open source code to model astrophysical systems, featuring self-gravitating, magnetised, compressible,
 radiative fluid flows. It is based  on the Adaptive Mesh Refinement (AMR)  technique on a  fully-threaded graded octree. 
-[ramses](https://bitbucket.org/rteyssie/ramses) is written in  Fortran 90 and is making intensive use of the Message 
-Passing Interface (MPI) library.
+[ramses](https://bitbucket.org/rteyssie/ramses) is written in Fortran 90 and makes intensive use of the 
+Message Passing Interface (MPI) library. 
+
+The main developer of the original version of the code is Romain Teyssier (University of Zürich, romain.teyssier@gmail.com).
+
+The version of [ramses] in this repository (https://bitbucket.org/dmartizzi/ramses) is a fork developed and maintained 
+by Davide Martizzi (davide.martizzi@gmail.com) to implement new galactic feedback models.
 
 You can go to the user's guide in [PDF here][4] and in the [WIKI here][1].
 
 Check regularly the [automatic test page][2]. Visit the code web site [here][3].
 
-Download the code by cloning the git repository using 
+Download the development version modified by Davide Martizzi by cloning the git repository using
+```
+$ git clone https://dmartizzi@bitbucket.org/dmartizzi/ramses.git
+```
+
+Download the original version of the code by cloning the git repository using 
 ```
 $ git clone https://bitbucket.org/rteyssie/ramses
 ```
