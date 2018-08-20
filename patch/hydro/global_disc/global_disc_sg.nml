@@ -3,8 +3,8 @@ hydro=.true.
 poisson=.true.
 pic=.true.
 ncontrol=1
-nrestart=20
-nremap=10
+nrestart=0
+nremap=5
 nsubcycle=10*2
 static=.false.
 /
@@ -74,9 +74,9 @@ tend=10.
 
 &HYDRO_PARAMS
 gamma=1.6667
-courant_factor=0.45
+courant_factor=0.5
 scheme='muscl'
-riemann='hllc'
+riemann='hll'
 slope_type=1
 pressure_fix=.true.
 beta_fix=1.0d-1
