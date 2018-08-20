@@ -1,14 +1,14 @@
 RAMSES version 3.10
 
 Original version:
-	Copyright Romain Teyssier and CEA from 1997 to 2007
+Copyright Romain Teyssier and CEA from 1997 to 2007
 
-	Copyright Romain Teyssier and the University of Zurich from 2008 to 2013
+Copyright Romain Teyssier and the University of Zurich from 2008 to 2013
 
-	romain.teyssier@gmail.com
+romain.teyssier@gmail.com
 
 This version:
-	Development fork managed by Davide Martizzi (University of Copenhagen, University of California, Santa Cruz)
+Development fork managed by Davide Martizzi (University of Copenhagen, University of California, Santa Cruz)
 
 This software is  an open source computer program whose  purpose is to
 perform  simulations of  self-gravitating  fluids  with Adaptive  Mesh
