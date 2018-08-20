@@ -402,6 +402,7 @@ subroutine blast_wave_feedback(ilevel,icount)
   real(kind=8)::RandNum,xsnr,ysnr,zsnr
   real(dp)::vri,vxi,vyi,vzi,mu
   real(dp)::Ei,Vi,Pi_,M_ej,rho_ej,pi,rho_average,weight,rho_average_all,weight_all
+  real(dp)::Z_average,Z_average_all
   real(dp),dimension(1:nvector,1:3)::pos
   integer,dimension(1:nvector)::cell_index,cell_levl,cc
 
@@ -467,6 +468,7 @@ subroutine blast_wave_feedback(ilevel,icount)
 
         rho_average=0.0d0
         weight=1.0d-20
+        Z_average=0.0d0
 
         ! Loop over levels
         do ilev=levelmin,nlevelmax
@@ -538,6 +540,7 @@ subroutine blast_wave_feedback(ilevel,icount)
                        if(drr.lt.rmax2)then
                           rho_average=rho_average+uold(ind_cell(i),1)*vol_loc
                           weight=weight+vol_loc
+                          if(metal)Z_average=Z_average+uold(ind_cell(i),6)/uold(ind_cell(i),1)*vol_loc
                        endif
                     endif
                  end do
@@ -555,9 +558,15 @@ subroutine blast_wave_feedback(ilevel,icount)
         rho_average=rho_average_all
         call MPI_ALLREDUCE(weight,weight_all,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,info)
         weight=weight_all
+        if(metal)then
+           Z_average_all=0.0d0
+           call MPI_ALLREDUCE(Z_average,Z_average_all,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,info)
+           Z_average=Z_average_all
+        end if
 #endif
 
         rho_average=rho_average/weight
+        Z_average=Z_average/weight
 
         vlimit=5.0d7 ! cm/s limit velocity
         ! Momentum criterion
@@ -565,12 +574,12 @@ subroutine blast_wave_feedback(ilevel,icount)
              & /(4.0*3.1415*vlimit*rho_average*1.66d-24/(3.0*0.76)))**(1.0/3.0)/scale_l/(rc/aexp)
         rmax=max(rc/aexp,rboost*rc/aexp)
         ! Thermal energy criterion
-        alpha=-7.83*(rho_average/scale_nH/100.)**(0.024)
-        rcool=3.021*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.421)
-        rrise=5.472*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.403)
-        !alpha=-11.3*(rho_average/scale_nH/100.)**(0.072)
-        !rcool=6.35*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.418)
-        !rrise=9.19*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.439)
+        alpha=-7.83*(rho_average/scale_nH/100.)**(0.024)*(Z_average/0.02)**(0.050)
+        rcool=3.021*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.421)*(Z_average/0.02)**(-0.082)
+        rrise=5.472*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.403)*(Z_average/0.02)**(-0.074)
+        !alpha=-11.3*(rho_average/scale_nH/100.)**(0.072)*(Z_average/0.02)**(0.070)
+        !rcool=6.35*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.418)*(Z_average/0.02)**(-0.050)
+        !rrise=9.19*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.439)*(Z_average/0.02)**(-0.067)
         if (rc/aexp<rcool) then
            E_SN_th=7.1d50
         else
@@ -594,6 +603,8 @@ subroutine blast_wave_feedback(ilevel,icount)
         ! Compute average density
         rho_average=0.0d0
         weight=1.0d-20
+        Z_average=0.0d0
+
         ! Loop over levels 
         do ilev=levelmin,nlevelmax
            ! Computing local volume (important for averaging hydro quantities) 
@@ -664,6 +675,7 @@ subroutine blast_wave_feedback(ilevel,icount)
                        if(drr.lt.rmax2)then
                           rho_average=rho_average+uold(ind_cell(i),1)*vol_loc
                           weight=weight+vol_loc
+                          if(metal)Z_average=Z_average+uold(ind_cell(i),6)/uold(ind_cell(i),1)*vol_loc
                        endif
                     endif
                  end do
@@ -681,17 +693,25 @@ subroutine blast_wave_feedback(ilevel,icount)
         rho_average=rho_average_all
         call MPI_ALLREDUCE(weight,weight_all,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,info)
         weight=weight_all
+        if(metal)then
+           Z_average_all=0.0d0
+           call MPI_ALLREDUCE(Z_average,Z_average_all,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,info)
+           Z_average=Z_average_all
+        end if
 #endif
         
         rho_average=rho_average/weight
+        Z_average=Z_average_all/weight
 
         if(myid==1)write(*,*)'Average density ', rho_average
 
+        if(myid==1)write(*,*)'Average metalliciy (solar units) ', Z_average
+
         !Subgrid model                                                                                                                                                                                                                                                        
-        rbreak=4.001*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.429)
-        rnod=0.969*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.330)
-        !rbreak=7.97*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.458)
-        !rnod=2.438*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.349)
+        rbreak=4.001*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.429)*(Z_average/0.02)**(-0.077)
+        rnod=0.969*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.330)*(Z_average/0.02)**(0.046)
+        !rbreak=7.97*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.458)*(Z_average/0.02)**(-0.058)
+        !rnod=2.438*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.349)*(Z_average/0.02)**(0.021)
         !Momentum
         if (rmax<rbreak) then
            P_SN_rad=3.479830d42*(rmax/rnod)**1.5
@@ -699,12 +719,12 @@ subroutine blast_wave_feedback(ilevel,icount)
            P_SN_rad=3.479830d42*(rbreak/rnod)**1.5
         end if
         !Thermal energy
-        alpha=-7.83*(rho_average/scale_nH/100.)**(0.024)
-        rcool=3.021*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.421)
-        rrise=5.472*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.403)
-        !alpha=-11.3*(rho_average/scale_nH/100.)**(0.072)
-        !rcool=6.35*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.418)
-        !rrise=9.19*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.439)
+        alpha=-7.83*(rho_average/scale_nH/100.)**(0.024)*(Z_average/0.02)**(0.050)
+        rcool=3.021*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.421)*(Z_average/0.02)**(-0.082)
+        rrise=5.472*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.403)*(Z_average/0.02)**(-0.074)
+        !alpha=-11.3*(rho_average/scale_nH/100.)**(0.072)*(Z_average/0.02)**(0.070)
+        !rcool=6.35*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.418)*(Z_average/0.02)**(-0.050)
+        !rrise=9.19*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.439)*(Z_average/0.02)**(-0.067)
         if (rmax<rcool) then
            E_SN_th=7.1d50
         else
@@ -820,7 +840,7 @@ subroutine blast_wave_feedback(ilevel,icount)
                           uold(ind_cell(i),3)=uold(ind_cell(i),3)+(rho_ej+rho_average)*vyi
                           uold(ind_cell(i),4)=uold(ind_cell(i),4)+(rho_ej+rho_average)*vzi
                           uold(ind_cell(i),5)=uold(ind_cell(i),5)+0.5*(rho_ej+rho_average)*(vxi**2+vyi**2+vzi**2)+Pi_/(gamma-1.0d0)
-
+                          if(metal)uold(ind_cell(i),6)=uold(ind_cell(i),6)+yield*rho_ej ! metal yield
                        endif
                     endif
                  end do

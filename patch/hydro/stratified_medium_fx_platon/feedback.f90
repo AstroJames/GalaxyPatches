@@ -576,11 +576,11 @@ subroutine blast_wave_feedback(ilevel,icount)
 
         !Subgrid model using Platon Karpov's formulae
         
-        a = 8.0945d34
-        b = 1.7520d36
-        c = 8.5856d-1
-        d = 6.7353d-1
-        f = 2.0217d0
+        a = 9.6526d34
+        b = 1.9516d36
+        c = 6.2107d-1
+        d = 5.6684d-1
+        f = 1.8613d0
         rho_scaled = rho_average/scale_nH/100
         Z_scaled = Z_average/0.02
         mcool = a+b/(1+((Z_scaled)/c)**d)*f**(-log10(rho_scaled)) ! cgs
@@ -589,21 +589,21 @@ subroutine blast_wave_feedback(ilevel,icount)
                                                                                                                        
         !Momentum and thermal energy
         if (rmax>rcool) then
-           a = 4.5783d42 
-           b = 2.4166d43
-           c = 2.6442d0
-           d = 5.6220d-1
-           f = 1.4618d0
+           a = 9.9171d42 
+           b = 3.3003d43
+           c = 2.0206d0
+           d = 5.3003d-1
+           f = 1.3760d0
            rho_scaled = rho_average/scale_nH/100
            Z_scaled = Z_average/0.02
            P_SN_rad = a+b/(1+((Z_scaled)/c)**d)*f**(-log10(rho_scaled))
            E_SN_th = 1.0d49 ! this is a floor imposed by the fact that we don't have a thermal energy fit yet.
         else
-           a = 4.5783d42
-           b = 2.4166d43
-           c = 2.6442d0
-           d = 5.6220d-1
-           f = 1.4618d0
+           a = 9.9171d42
+           b = 3.3003d43
+           c = 2.0206d0
+           d = 5.3003d-1
+           f = 1.3760d0
            rho_scaled = rho_average/scale_nH/100
            Z_scaled = Z_average/0.02
            P_SN_rad = a+b/(1+((Z_scaled)/c)**d)*f**(-log10(rho_scaled))

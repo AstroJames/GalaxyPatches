@@ -872,7 +872,7 @@ subroutine blast_wave_feedback(ilevel,icount)
                           uold(ind_cell(i),3)=uold(ind_cell(i),3)+(rho_ej+rho_average(isnr))*vyi
                           uold(ind_cell(i),4)=uold(ind_cell(i),4)+(rho_ej+rho_average(isnr))*vzi
                           uold(ind_cell(i),5)=uold(ind_cell(i),5)+0.5*(rho_ej+rho_average(isnr))*(vxi**2+vyi**2+vzi**2)+Pi_/(gamma-1.0d0)
-                          
+                          if(metal)uold(ind_cell(i),6)=uold(ind_cell(i),6)+yield*rho_ej ! metal yield
                        end if
                     end do
                  end if

@@ -172,6 +172,7 @@ subroutine condinit(x,u,dx,nn,ln_d)
       q(i,iv) = vyi
       q(i,iw) = vzi
       q(i,ip) = Pi_
+      if(metal)q(i,6)=z_ave*0.02*rhocool/(rhocool + rho_ej)+yield*rho_ej/(rhocool + rho_ej) ! customized metallicity value.
     else 
     
        ! Smooth or fractal ambient medium?
