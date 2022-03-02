@@ -5,18 +5,18 @@
 NVECTOR = 32
 NDIM = 3
 NPRE = 8
-NVAR = 5
+NVAR = 8
 NENER = 0
 SOLVER = hydro
-PATCH = 
+PATCH = /groups/dark/kolborg/ramses_mostrecent/patch/hydro/stratified_medium_fx_CC
 GRACKLE = 0
-EXEC = ramses
+EXEC = ramses_collapsar_
 #############################################################################
-GITBRANCH = $(shell git rev-parse --abbrev-ref HEAD)
-GITHASH = $(shell git log --pretty=format:'%H' -n 1)
-GITREMOTE = $(shell git config --get branch.$(GITBRANCH).remote)
-GITREPO = $(shell git config --get remote.$(GITREMOTE).url)
-BUILDDATE = $(shell date +"%D-%T")
+#GITBRANCH = $(shell git rev-parse --abbrev-ref HEAD)
+#GITHASH = $(shell git log --pretty=format:'%H' -n 1)
+#GITREMOTE = $(shell git config --get branch.$(GITBRANCH).remote)
+#GITREPO = $(shell git config --get remote.$(GITREMOTE).url)
+#BUILDDATE = $(shell date +"%D-%T")
 DEFINES = -DNVECTOR=$(NVECTOR) -DNDIM=$(NDIM) -DNPRE=$(NPRE) -DNENER=$(NENER) -DNVAR=$(NVAR) \
           -DSOLVER$(SOLVER)
 ifeq ($(GRACKLE),1)
@@ -27,8 +27,8 @@ endif
 # Fortran compiler options and directives
 
 # --- No MPI, gfortran -------------------------------
-F90 = gfortran -O3 -frecord-marker=4 -fbacktrace -ffree-line-length-none -g
-FFLAGS = -x f95-cpp-input $(DEFINES) -DWITHOUTMPI
+#F90 = gfortran -O3 -frecord-marker=4 -fbacktrace -ffree-line-length-none -g
+#FFLAGS = -x f95-cpp-input $(DEFINES) -DWITHOUTMPI
 
 # --- No MPI, tau ----------------------------------
 #F90 = tau_f90.sh -optKeepFiles -optPreProcess -optCPPOpts=$(DEFINES) -DWITHOUTMPI
@@ -62,8 +62,9 @@ FFLAGS = -x f95-cpp-input $(DEFINES) -DWITHOUTMPI
 #FFLAGS = -Mpreprocess $(DEFINES)
 
 # --- MPI, ifort syntax ------------------------------
-#F90 = mpif90
-#FFLAGS = -cpp -fast $(DEFINES) -DNOSYSTEM
+F90 = mpiifort -g #-pad-source
+FFLAGS = -xAVX -g -fpp -fast -cpp -fast $(DEFINES) -DNOSYSTEM
+#FFLAGS = -xAVX -g -traceback -fpp -fast -cpp -fast $(DEFINES) -DNOSYSTEM
 
 # --- MPI, ifort syntax, additional checks -----------
 #F90 = mpif90
@@ -104,7 +105,7 @@ ifeq ($(GRACKLE),1)
 MODOBJ += grackle_parameters.o
 endif
 MODOBJ += poisson_commons.o hydro_parameters.o hydro_commons.o cooling_module.o bisection.o sparse_mat.o \
-         clfind_commons.o gadgetreadfile.o write_makefile.o write_patch.o write_gitinfo.o
+         clfind_commons.o gadgetreadfile.o write_makefile.o write_patch.o #write_gitinfo.o
 
 AMROBJ = read_params.o init_amr.o init_time.o init_refine.o adaptive_loop.o amr_step.o update_time.o \
          output_amr.o flag_utils.o physical_boundaries.o virtual_boundaries.o refine_utils.o nbors_utils.o \
@@ -138,9 +139,9 @@ ramses_aton: $(MODOBJ) $(ATON_MODOBJ) $(AMRLIB) $(ATON_OBJ) ramses.o
 	rm write_makefile.f90
 	rm write_patch.f90
 #############################################################################
-write_gitinfo.o: FORCE
-	$(F90) $(FFLAGS) -DPATCH=\'$(PATCH)\' -DGITBRANCH=\'$(GITBRANCH)\' -DGITHASH=\'"$(GITHASH)"\' \
- -DGITREPO=\'$(GITREPO)\' -DBUILDDATE=\'"$(BUILDDATE)"\' -c ../amr/write_gitinfo.f90 -o $@		
+#write_gitinfo.o: FORCE
+#	$(F90) $(FFLAGS) -DPATCH=\'$(PATCH)\' -DGITBRANCH=\'$(GITBRANCH)\' -DGITHASH=\'"$(GITHASH)"\' \
+# -DGITREPO=\'$(GITREPO)\' -DBUILDDATE=\'"$(BUILDDATE)"\' -c ../amr/write_gitinfo.f90 -o $@		
 write_makefile.o: FORCE
 	../utils/scripts/cr_write_makefile.sh $(MAKEFILE_LIST)
 	$(F90) $(FFLAGS) -c write_makefile.f90 -o $@

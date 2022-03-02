@@ -377,7 +377,7 @@ end subroutine feedbk
 !################################################################
 !################################################################
 !################################################################
-subroutine blast_wave_feedback(ilevel,icount)
+subroutine blast_wave_feedback(ilevel, icount)
   use pm_commons
   use amr_commons
   use hydro_commons
@@ -622,6 +622,7 @@ subroutine blast_wave_feedback(ilevel,icount)
         if(myid==1)write(*,*)'Average density: ',rho_average
         if(myid==1)write(*,*)'Average metalicity =', Z_average/0.02
 
+
         ! Compute average density
         rho_average=0.0d0
         weight=1.0d-20
@@ -728,8 +729,8 @@ subroutine blast_wave_feedback(ilevel,icount)
         if(Z_average/0.02<0.01) Z_average = 0.01
 
         if(myid==1)write(*,*)'Average density ', rho_average
-
         if(myid==1)write(*,*)'Average metalliciy (solar units) ', Z_average
+        if(myid==1)write(*,*)'Output number = ', noutput
 
         !Subgrid model                                                                                                                                                                                                                                                        
         rbreak=4.001*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.429)*(Z_average/0.02)**(-0.077)
