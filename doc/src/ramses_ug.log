@@ -1,0 +1,639 @@
+This is pdfTeXk, Version 3.141592-1.40.3 (Web2C 7.5.6) (format=pdflatex 2018.1.19)  25 OCT 2018 13:56
+entering extended mode
+ %&-line parsing enabled.
+**ramses_ug.tex
+(./ramses_ug.tex
+LaTeX2e <2005/12/01>
+Babel <v3.8h> and hyphenation patterns for english, usenglishmax, dumylang, noh
+yphenation, arabic, basque, bulgarian, coptic, welsh, czech, slovak, german, ng
+erman, danish, esperanto, spanish, catalan, galician, estonian, farsi, finnish,
+ french, greek, monogreek, ancientgreek, croatian, hungarian, interlingua, ibyc
+us, indonesian, icelandic, italian, latin, mongolian, dutch, norsk, polish, por
+tuguese, pinyin, romanian, russian, slovenian, uppersorbian, serbian, swedish, 
+turkish, ukenglish, ukrainian, loaded.
+(/usr/share/texmf/tex/latex/base/article.cls
+Document Class: article 2005/09/16 v1.4f Standard LaTeX document class
+(/usr/share/texmf/tex/latex/base/size11.clo
+File: size11.clo 2005/09/16 v1.4f Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@section=\count80
+\c@subsection=\count81
+\c@subsubsection=\count82
+\c@paragraph=\count83
+\c@subparagraph=\count84
+\c@figure=\count85
+\c@table=\count86
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+)
+(/usr/share/texmf/tex/generic/babel/babel.sty
+Package: babel 2005/11/23 v3.8h The Babel package
+
+(/usr/share/texmf/tex/generic/babel/english.ldf
+Language: english 2005/03/30 v3.3o English support from the babel system
+
+(/usr/share/texmf/tex/generic/babel/babel.def
+File: babel.def 2005/11/23 v3.8h Babel common definitions
+\babel@savecnt=\count87
+\U@D=\dimen103
+)
+\l@british = a dialect from \language\l@english 
+\l@UKenglish = a dialect from \language\l@english 
+\l@canadian = a dialect from \language\l@american 
+\l@australian = a dialect from \language\l@british 
+\l@newzealand = a dialect from \language\l@british 
+))
+(/usr/share/texmf/tex/latex/base/makeidx.sty
+Package: makeidx 2000/03/29 v1.0m Standard LaTeX package
+)
+(/usr/share/texmf/tex/latex/base/fontenc.sty
+Package: fontenc 2005/09/27 v1.99g Standard LaTeX package
+
+(/usr/share/texmf/tex/latex/base/t1enc.def
+File: t1enc.def 2005/09/27 v1.99g Standard LaTeX file
+LaTeX Font Info:    Redeclaring font encoding T1 on input line 43.
+))
+(/usr/share/texmf/tex/latex/ae/ae.sty
+Package: ae 2001/02/12 1.3 Almost European Computer Modern
+
+(/usr/share/texmf/tex/latex/base/fontenc.sty
+Package: fontenc 2005/09/27 v1.99g Standard LaTeX package
+
+(/usr/share/texmf/tex/latex/base/t1enc.def
+File: t1enc.def 2005/09/27 v1.99g Standard LaTeX file
+LaTeX Font Info:    Redeclaring font encoding T1 on input line 43.
+)
+LaTeX Font Info:    Try loading font information for T1+aer on input line 100.
+
+(/usr/share/texmf/tex/latex/ae/t1aer.fd
+File: t1aer.fd 1997/11/16 Font definitions for T1/aer.
+)))
+(/usr/share/texmf/tex/latex/ae/aecompl.sty
+Package: aecompl 1998/07/23 0.9 T1 Complements for AE fonts (D. Roegel)
+)
+(/usr/share/texmf/tex/latex/graphics/graphicx.sty
+Package: graphicx 1999/02/16 v1.0f Enhanced LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texmf/tex/latex/graphics/keyval.sty
+Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
+\KV@toks@=\toks14
+)
+(/usr/share/texmf/tex/latex/graphics/graphics.sty
+Package: graphics 2006/02/20 v1.0o Standard LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texmf/tex/latex/graphics/trig.sty
+Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
+)
+(/usr/share/texmf/tex/latex/config/graphics.cfg
+File: graphics.cfg 2007/01/18 v1.5 graphics configuration of teTeX/TeXLive
+)
+Package graphics Info: Driver file: pdftex.def on input line 90.
+
+(/usr/share/texmf/tex/latex/pdftex-def/pdftex.def
+File: pdftex.def 2007/01/08 v0.04d Graphics/color for pdfTeX
+\Gread@gobject=\count88
+))
+\Gin@req@height=\dimen104
+\Gin@req@width=\dimen105
+)
+(/usr/share/texmf/tex/latex/xcolor/xcolor.sty
+Package: xcolor 2007/01/21 v2.11 LaTeX color extensions (UK)
+
+(/usr/share/texmf/tex/latex/config/color.cfg
+File: color.cfg 2007/01/18 v1.5 color configuration of teTeX/TeXLive
+)
+Package xcolor Info: Driver file: pdftex.def on input line 225.
+Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1337.
+Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1341.
+Package xcolor Info: Model `RGB' extended on input line 1353.
+Package xcolor Info: Model `HTML' substituted by `rgb' on input line 1355.
+Package xcolor Info: Model `Hsb' substituted by `hsb' on input line 1356.
+Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1357.
+Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1358.
+Package xcolor Info: Model `Gray' substituted by `gray' on input line 1359.
+Package xcolor Info: Model `wave' substituted by `hsb' on input line 1360.
+)
+(/usr/share/texmf/tex/latex/tools/array.sty
+Package: array 2005/08/23 v2.4b Tabular extension package (FMi)
+\col@sep=\dimen106
+\extrarowheight=\dimen107
+\NC@list=\toks15
+\extratabsurround=\skip43
+\backup@length=\skip44
+)
+(/usr/share/texmf/tex/latex/booktabs/booktabs.sty
+Package: booktabs 2005/03/16 v1.6180 publication quality tables
+\heavyrulewidth=\dimen108
+\lightrulewidth=\dimen109
+\cmidrulewidth=\dimen110
+\belowrulesep=\dimen111
+\belowbottomsep=\dimen112
+\aboverulesep=\dimen113
+\abovetopsep=\dimen114
+\cmidrulesep=\dimen115
+\cmidrulekern=\dimen116
+\defaultaddspace=\dimen117
+\@cmidla=\count89
+\@cmidlb=\count90
+\@aboverulesep=\dimen118
+\@belowrulesep=\dimen119
+\@thisruleclass=\count91
+\@lastruleclass=\count92
+\@thisrulewidth=\dimen120
+)
+(/usr/share/texmf/tex/latex/fancyvrb/fancyvrb.sty
+Package: fancyvrb 1998/07/17
+
+Style option: `fancyvrb' v2.6, with DG/SPQR fixes <1998/07/17> (tvz)
+\FV@CodeLineNo=\count93
+\FV@InFile=\read1
+\FV@TabBox=\box26
+\c@FancyVerbLine=\count94
+\FV@StepNumber=\count95
+\FV@OutFile=\write3
+
+No file fancyvrb.cfg.
+) (/usr/share/texmf/tex/latex/geometry/geometry.sty
+Package: geometry 2002/07/08 v3.2 Page Geometry
+\Gm@cnth=\count96
+\Gm@cntv=\count97
+\c@Gm@tempcnt=\count98
+\Gm@bindingoffset=\dimen121
+\Gm@wd@mp=\dimen122
+\Gm@odd@mp=\dimen123
+\Gm@even@mp=\dimen124
+\Gm@dimlist=\toks16
+)
+(/usr/share/texmf/tex/latex/tools/varioref.sty
+Package: varioref 2006/05/13 v1.4p package for extended references (FMi)
+\c@vrcnt=\count99
+)
+(/usr/share/texmf/tex/latex/hyperref/hyperref.sty
+Package: hyperref 2007/02/07 v6.75r Hypertext links for LaTeX
+\@linkdim=\dimen125
+\Hy@linkcounter=\count100
+\Hy@pagecounter=\count101
+
+(/usr/share/texmf/tex/latex/hyperref/pd1enc.def
+File: pd1enc.def 2007/02/07 v6.75r Hyperref: PDFDocEncoding definition (HO)
+)
+(/usr/share/texmf/tex/latex/config/hyperref.cfg
+File: hyperref.cfg 2002/06/06 v1.2 hyperref configuration of TeXLive
+)
+(/usr/share/texmf/tex/latex/oberdiek/kvoptions.sty
+Package: kvoptions 2006/08/22 v2.4 Connects package keyval with LaTeX options (
+HO)
+)
+Package hyperref Info: Option `colorlinks' set `true' on input line 2238.
+Package hyperref Info: Option `bookmarks' set `true' on input line 2238.
+Package hyperref Info: Hyper figures OFF on input line 2288.
+Package hyperref Info: Link nesting OFF on input line 2293.
+Package hyperref Info: Hyper index ON on input line 2296.
+Package hyperref Info: Plain pages OFF on input line 2303.
+Package hyperref Info: Backreferencing OFF on input line 2308.
+
+Implicit mode ON; LaTeX internals redefined
+Package hyperref Info: Bookmarks ON on input line 2444.
+(/usr/share/texmf/tex/latex/ltxmisc/url.sty
+\Urlmuskip=\muskip10
+Package: url 2005/06/27  ver 3.2  Verb mode for urls, etc.
+)
+LaTeX Info: Redefining \url on input line 2599.
+\Fld@menulength=\count102
+\Field@Width=\dimen126
+\Fld@charsize=\dimen127
+\Choice@toks=\toks17
+\Field@toks=\toks18
+Package hyperref Info: Hyper figures OFF on input line 3102.
+Package hyperref Info: Link nesting OFF on input line 3107.
+Package hyperref Info: Hyper index ON on input line 3110.
+Package hyperref Info: backreferencing OFF on input line 3117.
+Package hyperref Info: Link coloring ON on input line 3120.
+\Hy@abspage=\count103
+\c@Item=\count104
+\c@Hfootnote=\count105
+)
+*hyperref using default driver hpdftex*
+(/usr/share/texmf/tex/latex/hyperref/hpdftex.def
+File: hpdftex.def 2007/02/07 v6.75r Hyperref driver for pdfTeX
+\Fld@listcount=\count106
+)
+\@input{00-commands.aux}
+\openout2 = `00-commands.aux'.
+
+(./00-commands.tex)
+\@input{autolog/autologdefs.aux}
+\openout2 = `autolog/autologdefs.aux'.
+
+(./autolog/autologdefs.tex)
+\@indexfile=\write4
+\openout4 = `ramses_ug.idx'.
+
+
+Writing index file ramses_ug.idx
+(./ramses_ug.aux (./01-titlepage.aux) (./10-introduction.aux)
+(./20-gettingstarted.aux) (./30-runtimeparams.aux) (./40-cosmosims.aux)
+(./50-advancedsims.aux) (./60-policy.aux))
+\openout1 = `ramses_ug.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 46.
+LaTeX Font Info:    ... okay on input line 46.
+-------------------- Geometry parameters
+paper: a4paper
+landscape: --
+twocolumn: --
+twoside: true
+asymmetric: --
+h-parts: 72.26999pt, 452.9679pt, 72.26999pt
+v-parts: 72.26999pt, 693.27942pt, 79.49744pt
+hmarginratio: --
+vmarginratio: --
+lines: --
+heightrounded: --
+bindingoffset: 0.0pt
+truedimen: --
+includehead: --
+includefoot: --
+includemp: --
+driver: pdftex
+-------------------- Page layout dimensions and switches
+\paperwidth  597.50787pt
+\paperheight 845.04684pt
+\textwidth  452.9679pt
+\textheight 693.27942pt
+\oddsidemargin  0.0pt
+\evensidemargin 0.0pt
+\topmargin  -37.0pt
+\headheight 12.0pt
+\headsep    25.0pt
+\footskip   30.0pt
+\marginparwidth 103.0pt
+\marginparsep   10.0pt
+\columnsep  10.0pt
+\skip\footins  10.0pt plus 4.0pt minus 2.0pt
+\hoffset 0.0pt
+\voffset 0.0pt
+\mag 1000
+\@twosidetrue \@mparswitchtrue 
+(1in=72.27pt, 1cm=28.45pt)
+-----------------------
+Package hyperref Info: Link coloring ON on input line 46.
+
+(/usr/share/texmf/tex/latex/hyperref/nameref.sty
+Package: nameref 2006/12/27 v2.28 Cross-referencing by name of section
+
+(/usr/share/texmf/tex/latex/oberdiek/refcount.sty
+Package: refcount 2006/02/20 v3.0 Data extraction from references (HO)
+)
+\c@section@level=\count107
+)
+LaTeX Info: Redefining \ref on input line 46.
+LaTeX Info: Redefining \pageref on input line 46.
+ (./ramses_ug.out)
+(./ramses_ug.out)
+\@outlinefile=\write5
+\openout5 = `ramses_ug.out'.
+
+\openout2 = `01-titlepage.aux'.
+
+ (./01-titlepage.tex
+<img/amr.png, id=155, 513.92pt x 513.92pt>
+File: img/amr.png Graphic file (type png)
+ <use img/amr.png>
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <14.4> on input line 15.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 15.
+
+<img/irfu.pdf, id=156, 82.513pt x 145.10905pt>
+File: img/irfu.pdf Graphic file (type pdf)
+ <use img/irfu.pdf>
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <10.95> on input line 18.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 18.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 18.
+ [1
+
+
+
+
+
+
+{/usr/share/texmf/fonts/map/pdftex/updmap/pdftex.map} <./img/amr.png (PNG copy)
+> <./img/irfu.pdf
+
+pdfTeX warning: pdflatex (file ./img/irfu.pdf): PDF inclusion: Page Group detec
+ted which pdfTeX can't handle. Ignoring it.
+>]) [2
+
+
+] (./ramses_ug.toc)
+\tf@toc=\write6
+\openout6 = `ramses_ug.toc'.
+
+ [3]
+\openout2 = `10-introduction.aux'.
+
+ (./10-introduction.tex
+LaTeX Font Info:    Try loading font information for OMS+aer on input line 24.
+
+(/usr/share/texmf/tex/latex/ae/omsaer.fd
+File: omsaer.fd 1999/12/27
+)
+LaTeX Font Info:    Font shape `OMS/aer/m/n' in size <10.95> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 24.
+LaTeX Font Info:    Try loading font information for T1+aett on input line 28.
+
+(/usr/share/texmf/tex/latex/ae/t1aett.fd
+File: t1aett.fd 1997/11/16 Font definitions for T1/aett.
+)
+
+LaTeX Font Warning: Font shape `T1/aett/bx/n' undefined
+(Font)              using `T1/aett/m/n' instead on input line 28.
+
+[4
+
+
+]) [5]
+\openout2 = `20-gettingstarted.aux'.
+
+ (./20-gettingstarted.tex
+Overfull \hbox (18.46878pt too wide) in paragraph at lines 10--12
+\T1/aer/m/n/10.95 The pack-age can be down-loaded from the Bit-bucket repos-i-t
+ory [][]$\T1/aett/m/n/10.95 https : / / bitbucket . org / rteyssie /
+ []
+
+[6
+
+
+
+] [7] [8
+
+] <img/sod.png, id=248, 1171.37625pt x 1054.94125pt>
+File: img/sod.png Graphic file (type png)
+
+<use img/sod.png>
+LaTeX Font Info:    Try loading font information for T1+aess on input line 201.
+
+ (/usr/share/texmf/tex/latex/ae/t1aess.fd
+File: t1aess.fd 1997/11/16 Font definitions for T1/aess.
+)
+<./img/warning.pdf, id=249, 42.83978pt x 37.55788pt>
+File: ./img/warning.pdf Graphic file (type pdf)
+ <use ./img/warning.pdf>
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 201--205
+ []$
+ []
+
+) [9 <./img/warning.pdf
+
+pdfTeX warning: pdflatex (file ./img/warning.pdf): PDF inclusion: Page Group de
+tected which pdfTeX can't handle. Ignoring it.
+>] [10 <./img/sod.png (PNG copy)>]
+\openout2 = `30-runtimeparams.aux'.
+
+ (./30-runtimeparams.tex [11
+
+
+
+]
+File: ./img/warning.pdf Graphic file (type pdf)
+
+<use ./img/warning.pdf>
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 16--21
+ []$
+ []
+
+[12]
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 37.
+
+Underfull \hbox (badness 10000) in paragraph at lines 72--72
+[]|\T1/aer/m/n/10 Character
+ []
+
+[13
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 103--105
+[]|\T1/aer/m/n/10 Maximum level of re-fine-ment. If
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 103--105
+[]\T1/aett/bx/n/10 =levelmin\T1/aer/m/n/10 , this cor-re-sponds to
+ []
+
+
+Underfull \hbox (badness 1990) in paragraph at lines 120--123
+\T1/aer/m/it/10 cesses\T1/aer/m/n/10 . Ob-vi-ously, one has in this case
+ []
+
+[14
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 143--143
+[]|\T1/aer/m/n/10 Character
+ []
+
+
+Underfull \hbox (badness 5985) in paragraph at lines 170--175
+\T1/aer/m/n/10 pute dis-tances for the gen-er-al-ized el-lip-
+ []
+
+
+Underfull \hbox (badness 7030) in paragraph at lines 170--175
+\T1/aer/m/n/10 soid. \T1/aett/bx/n/10 exp_region=2 \T1/aer/m/n/10 cor-re-sponds
+ to a
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 191--192
+[]|\T1/aer/m/n/10 Character
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 213--214
+[]|\T1/aer/m/n/10 Character
+ []
+
+[15
+
+]
+Underfull \hbox (badness 1394) in paragraph at lines 235--237
+[]|\T1/aer/m/n/10 Value of spec-i-fied out-put ex-pan-sion fac-tor
+ []
+
+[16
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 282--282
+[]|\T1/aer/m/n/10 Character
+ []
+
+[17
+
+] [18
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 391--391
+[]|\T1/aer/m/n/10 Character
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 399--399
+[]|\T1/aer/m/n/10 Character
+ []
+
+
+Underfull \hbox (badness 2393) in paragraph at lines 418--418
+\T1/aett/m/n/10 slope_type=3\T1/aer/m/n/10 : Multi-dimensional Mon-Cen
+ []
+
+[19
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 464--465
+[]|[]\T1/aett/m/n/10 n_star=0.1,
+ []
+
+[20
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 522--523
+[]|[]\T1/aett/m/n/10 gravity_params=0.0, 0.0,
+ []
+
+[21
+
+]
+Underfull \hbox (badness 2828) in paragraph at lines 550--554
+\T1/aer/m/n/10 fined if the baryons mass in a cell ex-
+ []
+
+
+Underfull \hbox (badness 3701) in paragraph at lines 550--554
+\T1/aer/m/n/10 num-ber of dark mat-ter par-ti-cles ex-ceeds
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 585--585
+[][]\T1/aett/m/n/10 x_refine=0.0,0.0,0.0,
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 585--585
+[]\T1/aett/m/n/10 y_refine=0.0,0.0,0.0,
+ []
+
+) [22
+
+]
+\openout2 = `40-cosmosims.aux'.
+
+ (./40-cosmosims.tex [23
+
+
+
+]
+File: ./img/warning.pdf Graphic file (type pdf)
+ <use ./img/warning.pdf>
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 57--71
+ []$
+ []
+
+[24]
+File: ./img/warning.pdf Graphic file (type pdf)
+ <use ./img/warning.pdf>
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 116--123
+ []$
+ []
+
+<img/hilbert.png, id=337, 784.9325pt x 689.57625pt>
+File: img/hilbert.png Graphic file (type png)
+ <use img/hilbert.png>
+[25] [26 <./img/hilbert.png (PNG copy)>] [27]) [28]
+\openout2 = `50-advancedsims.aux'.
+
+ (./50-advancedsims.tex
+[29
+
+
+
+]
+File: ./img/warning.pdf Graphic file (type pdf)
+ <use ./img/warning.pdf>
+Overfull \hbox (2.27618pt too wide) in paragraph at lines 91--118
+ []$
+ []
+
+<img/bc.pdf, id=363, 370.38374pt x 342.27875pt>
+File: img/bc.pdf Graphic file (type pdf)
+ <use img/bc.pdf> [30]
+Overfull \hbox (3.85352pt too wide) in paragraph at lines 166--178
+[][][][]$\T1/aer/m/n/10.95 . All starred pa-ram-e-ters can be set within the na
+melist block []\T1/aett/bx/n/10.95 &PHYSICS_PARAMS\T1/aer/m/n/10.95 .
+ []
+
+) [31 <./img/bc.pdf>]
+\openout2 = `60-policy.aux'.
+
+ (./60-policy.tex) [32
+
+
+
+] (./ramses_ug.ind [33
+
+
+
+] [34])
+(./ramses_ug.aux (./01-titlepage.aux) (./10-introduction.aux)
+(./20-gettingstarted.aux) (./30-runtimeparams.aux) (./40-cosmosims.aux)
+(./50-advancedsims.aux) (./60-policy.aux))
+
+LaTeX Font Warning: Some font shapes were not available, defaults substituted.
+
+ ) 
+Here is how much of TeX's memory you used:
+ 4761 strings out of 256214
+ 63314 string characters out of 1917000
+ 135480 words of memory out of 1500000
+ 7788 multiletter control sequences out of 10000+200000
+ 53055 words of font info for 99 fonts, out of 1200000 for 2000
+ 645 hyphenation exceptions out of 8191
+ 28i,15n,38p,441b,458s stack positions out of 5000i,500n,6000p,200000b,15000s
+</usr/share/texmf/fonts/type1/bluesky/cm/cmbx10.pfb></usr/share/texmf/fonts/t
+ype1/bluesky/cm/cmbx12.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmcsc10.pfb
+></usr/share/texmf/fonts/type1/bluesky/cm/cmmi10.pfb></usr/share/texmf/fonts/ty
+pe1/bluesky/cm/cmmi7.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmmi8.pfb></u
+sr/share/texmf/fonts/type1/bluesky/cm/cmr10.pfb></usr/share/texmf/fonts/type1/b
+luesky/cm/cmr12.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmr6.pfb></usr/sha
+re/texmf/fonts/type1/bluesky/cm/cmr7.pfb></usr/share/texmf/fonts/type1/bluesky/
+cm/cmr8.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmss10.pfb></usr/share/tex
+mf/fonts/type1/bluesky/cm/cmssbx10.pfb></usr/share/texmf/fonts/type1/bluesky/cm
+/cmsy10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmsy6.pfb></usr/share/texm
+f/fonts/type1/bluesky/cm/cmsy8.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmt
+i10.pfb></usr/share/texmf/fonts/type1/bluesky/cm/cmtt10.pfb></usr/share/texmf/f
+onts/type1/bluesky/cm/cmtt8.pfb>
+Output written on ramses_ug.pdf (34 pages, 585511 bytes).
+PDF statistics:
+ 708 PDF objects out of 1000 (max. 8388607)
+ 78 named destinations out of 1000 (max. 131072)
+ 343 words of extra memory for PDF output out of 10000 (max. 10000000)
+

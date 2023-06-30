@@ -1,0 +1,38 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}
+\BOOKMARK [2][-]{subsection.1.1}{About This Guide}{section.1}
+\BOOKMARK [2][-]{subsection.1.2}{Getting RAMSES}{section.1}
+\BOOKMARK [2][-]{subsection.1.3}{Main features}{section.1}
+\BOOKMARK [2][-]{subsection.1.4}{Acknowledgements}{section.1}
+\BOOKMARK [2][-]{subsection.1.5}{The CeCILL License}{section.1}
+\BOOKMARK [1][-]{section.2}{Getting started}{}
+\BOOKMARK [2][-]{subsection.2.1}{Obtaining the package}{section.2}
+\BOOKMARK [2][-]{subsection.2.2}{Compiling the code}{section.2}
+\BOOKMARK [2][-]{subsection.2.3}{Executing the test case}{section.2}
+\BOOKMARK [2][-]{subsection.2.4}{Reading the Log File}{section.2}
+\BOOKMARK [1][-]{section.3}{Runtime Parameters}{}
+\BOOKMARK [2][-]{subsection.3.1}{Global parameters}{section.3}
+\BOOKMARK [2][-]{subsection.3.2}{AMR grid}{section.3}
+\BOOKMARK [2][-]{subsection.3.3}{Initial conditions}{section.3}
+\BOOKMARK [2][-]{subsection.3.4}{Output parameters}{section.3}
+\BOOKMARK [2][-]{subsection.3.5}{Movie parameters}{section.3}
+\BOOKMARK [2][-]{subsection.3.6}{Boundary conditions}{section.3}
+\BOOKMARK [2][-]{subsection.3.7}{Hydrodynamics solver}{section.3}
+\BOOKMARK [2][-]{subsection.3.8}{Physical parameters}{section.3}
+\BOOKMARK [2][-]{subsection.3.9}{Poisson solver}{section.3}
+\BOOKMARK [2][-]{subsection.3.10}{Refinement strategy}{section.3}
+\BOOKMARK [1][-]{section.4}{Cosmological simulations}{}
+\BOOKMARK [2][-]{subsection.4.1}{Parameter file and initial conditions}{section.4}
+\BOOKMARK [2][-]{subsection.4.2}{Memory management}{section.4}
+\BOOKMARK [2][-]{subsection.4.3}{Restarting a run}{section.4}
+\BOOKMARK [2][-]{subsection.4.4}{Parallel computing}{section.4}
+\BOOKMARK [2][-]{subsection.4.5}{Post-processing utilities}{section.4}
+\BOOKMARK [2][-]{subsection.4.6}{Zoom simulations}{section.4}
+\BOOKMARK [1][-]{section.5}{Advanced simulations}{}
+\BOOKMARK [2][-]{subsection.5.1}{Patching the code}{section.5}
+\BOOKMARK [2][-]{subsection.5.2}{Physical units}{section.5}
+\BOOKMARK [2][-]{subsection.5.3}{Initial conditions}{section.5}
+\BOOKMARK [2][-]{subsection.5.4}{Boundary conditions}{section.5}
+\BOOKMARK [2][-]{subsection.5.5}{External gravity sources}{section.5}
+\BOOKMARK [2][-]{subsection.5.6}{External thermal sources}{section.5}
+\BOOKMARK [1][-]{section.6}{Publication policy}{}
+\BOOKMARK [1][-]{section*.2}{Index}{}

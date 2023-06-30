@@ -1,0 +1,7 @@
+        !COMPILER-GENERATED INTERFACE MODULE: Tue Nov 17 10:24:53 2020
+        MODULE DUMP_ALL__genmod
+          INTERFACE 
+            SUBROUTINE DUMP_ALL
+            END SUBROUTINE DUMP_ALL
+          END INTERFACE 
+        END MODULE DUMP_ALL__genmod

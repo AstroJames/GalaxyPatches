@@ -1,0 +1,11 @@
+        !COMPILER-GENERATED INTERFACE MODULE: Tue Nov 17 10:25:07 2020
+        MODULE EMPTY_COMM__genmod
+          INTERFACE 
+            SUBROUTINE EMPTY_COMM(IND_COM,NP,ILEVEL,ICPU)
+              INTEGER(KIND=4) :: IND_COM(1:32)
+              INTEGER(KIND=4) :: NP
+              INTEGER(KIND=4) :: ILEVEL
+              INTEGER(KIND=4) :: ICPU
+            END SUBROUTINE EMPTY_COMM
+          END INTERFACE 
+        END MODULE EMPTY_COMM__genmod
