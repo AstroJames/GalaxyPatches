@@ -8,9 +8,9 @@ NPRE = 8
 NVAR = 8
 NENER = 0
 SOLVER = hydro
-PATCH = /groups/dark/kolborg/ramses_mostrecent/patch/hydro/stratified_medium_fx_CC
+PATCH = '../patch/hydro/stratified_medium_fx_NSM'
 GRACKLE = 0
-EXEC = ramses_collapsar_
+EXEC = ramses_NSM_
 #############################################################################
 #GITBRANCH = $(shell git rev-parse --abbrev-ref HEAD)
 #GITHASH = $(shell git log --pretty=format:'%H' -n 1)
@@ -105,7 +105,7 @@ ifeq ($(GRACKLE),1)
 MODOBJ += grackle_parameters.o
 endif
 MODOBJ += poisson_commons.o hydro_parameters.o hydro_commons.o cooling_module.o bisection.o sparse_mat.o \
-         clfind_commons.o gadgetreadfile.o write_makefile.o write_patch.o #write_gitinfo.o
+         clfind_commons.o gadgetreadfile.o write_makefile.o write_patch.o write_gitinfo.o
 
 AMROBJ = read_params.o init_amr.o init_time.o init_refine.o adaptive_loop.o amr_step.o update_time.o \
          output_amr.o flag_utils.o physical_boundaries.o virtual_boundaries.o refine_utils.o nbors_utils.o \
@@ -139,9 +139,9 @@ ramses_aton: $(MODOBJ) $(ATON_MODOBJ) $(AMRLIB) $(ATON_OBJ) ramses.o
 	rm write_makefile.f90
 	rm write_patch.f90
 #############################################################################
-#write_gitinfo.o: FORCE
-#	$(F90) $(FFLAGS) -DPATCH=\'$(PATCH)\' -DGITBRANCH=\'$(GITBRANCH)\' -DGITHASH=\'"$(GITHASH)"\' \
-# -DGITREPO=\'$(GITREPO)\' -DBUILDDATE=\'"$(BUILDDATE)"\' -c ../amr/write_gitinfo.f90 -o $@		
+write_gitinfo.o: FORCE
+	$(F90) $(FFLAGS) -DPATCH=\'$(PATCH)\' -DGITBRANCH=\'$(GITBRANCH)\' -DGITHASH=\'"$(GITHASH)"\' \
+ -DGITREPO=\'$(GITREPO)\' -DBUILDDATE=\'"$(BUILDDATE)"\' -c ../amr/write_gitinfo.f90 -o $@		
 write_makefile.o: FORCE
 	../utils/scripts/cr_write_makefile.sh $(MAKEFILE_LIST)
 	$(F90) $(FFLAGS) -c write_makefile.f90 -o $@

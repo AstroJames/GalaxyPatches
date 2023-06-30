@@ -895,25 +895,33 @@ subroutine blast_wave_feedback(ilevel,icount)
                              uold(ind_cell(i),6)=uold(ind_cell(i),6)+yield_cc_Fe*rho_ej ! metal yield
                              uold(ind_cell(i),7)=uold(ind_cell(i),7)+yield_cc_alpha*rho_ej
                              uold(ind_cell(i),8)=uold(ind_cell(i),8)+yield_cc_rp*rho_ej
+                             !write(*,*) 'It is a cc-SN and yields are:', yield_cc_Fe, yield_cc_alpha, yield_cc_rp, rho_ej
 
                           else if(metal.and.random_NSM(nblast_current_internal)<conversion_NSM.and.random_Ia(nblast_current_internal)>=conversion_Ia)then
                              uold(ind_cell(i),6)=uold(ind_cell(i),6)+yield_NSM_Fe*rho_ej
                              uold(ind_cell(i),7)=uold(ind_cell(i),7)+yield_NSM_alpha*rho_ej
                              uold(ind_cell(i),8)=uold(ind_cell(i),8)+yield_NSM_rp*rho_ej
+                             !write(*,*) 'It is a collapsar and yields are:', yield_NSM_Fe, yield_NSM_alpha, yield_NSM_rp, rho_ej
 
                           else if(metal.and.random_NSM(nblast_current_internal)>=conversion_NSM.and.random_Ia(nblast_current_internal)<conversion_Ia)then
                              uold(ind_cell(i),6)=uold(ind_cell(i),6)+yield_Ia_Fe*rho_ej
                              uold(ind_cell(i),7)=uold(ind_cell(i),7)+yield_Ia_alpha*rho_ej
                              uold(ind_cell(i),8)=uold(ind_cell(i),8)+yield_Ia_rp*rho_ej
+
+                             !write(*,*) 'It is a Ia and yields are:', yield_Ia_Fe, yield_Ia_alpha, yield_Ia_rp
+
                           else if(metal.and.random_NSM(nblast_current_internal)<conversion_NSM.and.random_Ia(nblast_current_internal)<conversion_Ia)then
                              if (dice(nblast_current_internal)<Ia_vs_NSM)then
                                 uold(ind_cell(i),6)=uold(ind_cell(i),6)+yield_Ia_Fe*rho_ej
                                 uold(ind_cell(i),7)=uold(ind_cell(i),7)+yield_Ia_alpha*rho_ej
                                 uold(ind_cell(i),8)=uold(ind_cell(i),8)+yield_Ia_rp*rho_ej
+                                !write(*,*) 'It is a Ia and yields are:', yield_Ia_Fe, yield_Ia_alpha, yield_Ia_rp
+
                              else 
                                 uold(ind_cell(i),6)=uold(ind_cell(i),6)+yield_NSM_Fe*rho_ej
                                 uold(ind_cell(i),7)=uold(ind_cell(i),7)+yield_NSM_alpha*rho_ej
                                 uold(ind_cell(i),8)=uold(ind_cell(i),8)+yield_NSM_rp*rho_ej
+                                !write(*,*) 'It is a collapsar and yields are:', yield_NSM_Fe, yield_NSM_alpha, yield_NSM_rp
                              end if 
                           end if
                        endif

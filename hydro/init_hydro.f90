@@ -73,32 +73,26 @@ subroutine init_hydro
 
 
      open(unit=ilun,file=fileloc,form='unformatted')
-
      read(ilun)ncpu2
      read(ilun)nvar2
      read(ilun)ndim2
      read(ilun)nlevelmax2
      read(ilun)nboundary2
      read(ilun)gamma2
-     !if(myid==1)then
-     !   write(*,*)'Restart - Non-thermal pressure / Passive scalar mapping'
-     !   write(*,'(A50)')"__________________________________________________"
- !       write(*,*) 'nvar2 = ', nvar2, 'ndim+2 = ',  ndim+2
-        !write(*,*) 'say anything'
-        !write(*,*) 'remap scalar before do loop:', remap_pscalar(i)
-        !do i=1,nvar2-(ndim+2)
-        !   write(*,*) 'i = ', i
-        !   write(*,*) 'remap scalar =', remap_pscalar(i)
-        !   if(remap_pscalar(i).gt.0) then
-        !      write(*,'(A,I3,A,I3)') ' Restart var',i+ndim+2,' loaded in var',remap_pscalar(i)
-        !   else if(remap_pscalar(i).gt.-1)then
-        !      write(*,'(A,I3,A)') ' Restart var',i+ndim+2,' read but not loaded'
-        !   else
-        !      write(*,'(A,I3,A)') ' Restart var',i+ndim+2,' not read'
-        !   endif
-      !  enddo
-      !  write(*,'(A50)')"__________________________________________________"
-     !endif
+     if(myid==1)then
+        write(*,*)'Restart - Non-thermal pressure / Passive scalar mapping'
+        write(*,'(A50)')"__________________________________________________"
+        do i=1,nvar2-(ndim+2)
+            if(remap_pscalar(i).gt.0) then
+               write(*,'(A,I3,A,I3)') ' Restart var',i+ndim+2,' loaded in var',remap_pscalar(i)
+            else if(remap_pscalar(i).gt.-1)then
+               write(*,'(A,I3,A)') ' Restart var',i+ndim+2,' read but not loaded'
+            else
+               write(*,'(A,I3,A)') ' Restart var',i+ndim+2,' not read'
+            endif
+        enddo
+        write(*,'(A50)')"__________________________________________________"
+     endif
 #ifdef RT
      if((neq_chem.or.rt).and.nvar2.lt.nvar)then ! OK to add ionization fraction vars
         ! Convert birth times for RT postprocessing:
@@ -125,15 +119,12 @@ subroutine init_hydro
               ncache=numbb(ibound-ncpu,ilevel)
               istart=headb(ibound-ncpu,ilevel)
            end if
-!           write(*,*) 'ncpu2 = ', ncpu2, 'nvar2 = ', nvar2, 'ndim2 = ', ndim2, 'nlevelmax2 = ', nlevelmax2, 'nboundary2 =', nboundary2, 'gamma2 =', gamma2
-!           write(*,*) 'ncpu = ', ncpu, 'nboundary = ', nboundary
            read(ilun)ilevel2
            read(ilun)numbl2
            if(numbl2.ne.ncache)then
               write(*,*)'File hydro.tmp is not compatible'
               write(*,*)'Found   =',numbl2,' for level ',ilevel2
               write(*,*)'Expected=',ncache,' for level ',ilevel
-              write(*,*) 'And my id is: ', myid
            end if
            if(ncache>0)then
               allocate(ind_grid(1:ncache))
@@ -164,25 +155,17 @@ subroutine init_hydro
 
 #if NENER>0
                  ! Read non-thermal pressures --> non-thermal energies
-!                 do ivar=ndim+3,ndim+2+nener
-!                    if(remap_pscalar(ivar-ndim-2).gt.-1) read(ilun)xx
-!                    do i=1,ncache
-!                       if(remap_pscalar(ivar-ndim-2).gt.0) then
-!                          uold(ind_grid(i)+iskip,remap_pscalar(ivar-ndim-2))=xx(i)/(gamma_rad(ivar-ndim-2)-1d0)
-!                       else if(remap_pscalar(ivar-ndim-2).lt.0) then
-!                          uold(ind_grid(i)+iskip,abs(remap_pscalar(ivar-ndim-2)))=0d0
-!                       endif
-!                    end do
-!                 end do
-#endif
-                 ! Read metallicities 
-                 do ivar = ndim+3, ndim+2+nener
-                    read(ilun)xx
-                    do i = 1,ncache
-                       uold(ind_grid(i)+iskip, ivar) = xx(i)
+                 do ivar=ndim+3,ndim+2+nener
+                    if(remap_pscalar(ivar-ndim-2).gt.-1) read(ilun)xx
+                    do i=1,ncache
+                       if(remap_pscalar(ivar-ndim-2).gt.0) then
+                          uold(ind_grid(i)+iskip,remap_pscalar(ivar-ndim-2))=xx(i)/(gamma_rad(ivar-ndim-2)-1d0)
+                       else if(remap_pscalar(ivar-ndim-2).lt.0) then
+                          uold(ind_grid(i)+iskip,abs(remap_pscalar(ivar-ndim-2)))=0d0
+                       endif
                     end do
-                 end do 
-
+                 end do
+#endif
                  ! Read thermal pressure --> total fluid energy
                  read(ilun)xx
                  do i=1,ncache
@@ -207,24 +190,19 @@ subroutine init_hydro
                  end do
 #if NVAR>NDIM+2+NENER
                  ! Read passive scalars
-                 !                 write(*,*)'ndim+3+nener = ', ndim+3+nener, 'nvar2 = ', nvar2, 'nvar = ', nvar
-!                 n1 = ndim+3+nener
-!                 n2 = max(nvar2, nvar)
-!                 do ivar=ndim+3+nener, max(nvar2,nvar)
-!                 do ivar = n1,n2
-!                    write(*,*) 'ivar = ', ivar, 'remap = ', remap_pscalar(ivar-ndim-2)
-!                    if(remap_pscalar(ivar-ndim-2).gt.-1) read(ilun)xx
-!                    if(ivar.gt.nvar)then
-!                       continue
-!                    endif
-!                    do i=1,ncache
-!                       if(remap_pscalar(ivar-ndim-2).gt.0)then
-!                          uold(ind_grid(i)+iskip,remap_pscalar(ivar-ndim-2))=xx(i)*max(uold(ind_grid(i)+iskip,1),smallr)
-!                       else if(remap_pscalar(ivar-ndim-2).lt.0) then
-!                          uold(ind_grid(i)+iskip,abs(remap_pscalar(ivar-ndim-2)))=0d0
-!                       endif
-!                    end do
-!                 end do
+                 do ivar=ndim+3+nener,max(nvar2,nvar)
+                    if(remap_pscalar(ivar-ndim-2).gt.-1) read(ilun)xx
+                    if(ivar.gt.nvar)then
+                       continue
+                    endif
+                    do i=1,ncache
+                       if(remap_pscalar(ivar-ndim-2).gt.0)then
+                          uold(ind_grid(i)+iskip,remap_pscalar(ivar-ndim-2))=xx(i)*max(uold(ind_grid(i)+iskip,1),smallr)
+                       else if(remap_pscalar(ivar-ndim-2).lt.0) then
+                          uold(ind_grid(i)+iskip,abs(remap_pscalar(ivar-ndim-2)))=0d0
+                       endif
+                    end do
+                 end do
 #endif
               end do
               deallocate(ind_grid,xx)
