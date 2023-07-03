@@ -267,6 +267,7 @@ subroutine read_hydro_params(nml_ok)
   !-----------------------------------
   ! Sort out passive variable indices
   !-----------------------------------
+  !inener = ndim+3 !! Anne why is this not set in the patch? (see hydro/read_hydro_params)
   imetal=nener+ndim+3
   idelay=imetal
   if(metal)idelay=imetal+1

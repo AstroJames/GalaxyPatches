@@ -40,7 +40,7 @@ subroutine dump_all
      endif
 
      call create_output_dirs(filedir)
-
+   
      if(myid==1.and.print_when_io) write(*,*)'Start backup header'
      ! Output header: must be called by each process !
      filename=TRIM(filedir)//'header_'//TRIM(nchar)//'.txt'

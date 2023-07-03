@@ -9,8 +9,10 @@ NVAR = 8
 NENER = 0
 SOLVER = hydro
 PATCH = '../patch/hydro/stratified_medium_fx_NSM'
+#PATCH = '../patch/hydro/stratified_medium_fx'
 GRACKLE = 0
-EXEC = ramses_NSM_
+#EXEC = ramses_Martizzi_
+EXEC = ramses_MPI_
 #############################################################################
 #GITBRANCH = $(shell git rev-parse --abbrev-ref HEAD)
 #GITHASH = $(shell git log --pretty=format:'%H' -n 1)
@@ -26,10 +28,14 @@ endif
 #############################################################################
 # Fortran compiler options and directives
 
-# --- No MPI, gfortran -------------------------------
-#F90 = gfortran -O3 -frecord-marker=4 -fbacktrace -ffree-line-length-none -g
+# --- No MPI, gfortran, DEBUG -------------------------------
+#F90 = gfortran -O0 -frecord-marker=4 -fbacktrace -ffree-line-length-none -ggdb3 -Wuninitialized
 #FFLAGS = -x f95-cpp-input $(DEFINES) -DWITHOUTMPI
+#-ffpe-trap=zero,underflow,overflow  $(DEFINES) -DWITHOUTMPI
 
+# --- No MPI, gfortran, production ---------
+#F90 = gfortran -O3 -ffree-line-length-none
+#FFLAGS = -x f95-cpp-input $(DEFINES) -DWITHOUTMPI
 # --- No MPI, tau ----------------------------------
 #F90 = tau_f90.sh -optKeepFiles -optPreProcess -optCPPOpts=$(DEFINES) -DWITHOUTMPI
 
@@ -50,8 +56,9 @@ endif
 #FFLAGS = -cpp $(DEFINES) -DWITHOUTMPI
 
 # --- MPI, gfortran syntax ------------------------------
-#F90 = mpif90 -frecord-marker=4 -O3 -ffree-line-length-none -g -fbacktrace 
-#FFLAGS = -x f95-cpp-input $(DEFINES)
+##This one, maybe?
+F90 = mpifort -O3 -ffree-line-length-none
+FFLAGS = -x f95-cpp-input -fallow-argument-mismatch $(DEFINES)
 
 # --- MPI, gfortran DEBUG syntax ------------------------------ 
 #F90 = mpif90 -frecord-marker=4 -ffree-line-length-none -fbacktrace -g -O -fbounds-check -Wuninitialized -Wall
@@ -61,9 +68,13 @@ endif
 #F90 = mpif90 -O3
 #FFLAGS = -Mpreprocess $(DEFINES)
 
+# --- OpenMPI, mpifort syntax ----------
+#F90 = mpifort -ffree-line-length-none -O0 -frecord-marker=4 -fbacktrace -g -fbounds-check
+#FFLAGS = -x f95-cpp-input -fallow-argument-mismatch
+
 # --- MPI, ifort syntax ------------------------------
-F90 = mpiifort -g #-pad-source
-FFLAGS = -xAVX -g -fpp -fast -cpp -fast $(DEFINES) -DNOSYSTEM
+#F90 = mpiifort -g #-pad-source
+#FFLAGS = -xAVX -g -fpp -fast -cpp -fast $(DEFINES) -DNOSYSTEM
 #FFLAGS = -xAVX -g -traceback -fpp -fast -cpp -fast $(DEFINES) -DNOSYSTEM
 
 # --- MPI, ifort syntax, additional checks -----------
@@ -94,7 +105,7 @@ ifeq ($(GRACKLE),1)
 LIBS_GRACKLE = -L$(HOME)/local/lib -lgrackle -lhdf5 -lz -lgfortran -ldl
 LIBS_OBJ     = -I$(HOME)/local/include -DCONFIG_BFLOAT_8 -DH5_USE_16_API -fPIC
 endif
-LIBS = $(LIBMPI) $(LIBS_GRACKLE)
+LIBS = $(LIBMPI) $(LIBS_GRACKLE) -L/usr/local/Cellar/gcc/13.1.0/lib/gcc/13/ -lgfortran -ldl
 #############################################################################
 # Sources directories are searched in this exact order
 VPATH = $(shell [ -z $(PATCH) ] || find $(PATCH) -type d):../$(SOLVER):../aton:../hydro:../pm:../poisson:../amr:../io

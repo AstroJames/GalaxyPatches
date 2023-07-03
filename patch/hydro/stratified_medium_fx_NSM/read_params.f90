@@ -69,6 +69,7 @@ subroutine read_params
   write(*,*)'               (c) CEA 1999-2007, UZH 2008-2014                '
   write(*,*)' '
   write(*,'(" Working with nproc = ",I4," for ndim = ",I1)')ncpu,ndim
+  
   ! Check nvar is not too small
 #ifdef SOLVERhydro
   write(*,'(" Using solver = hydro with nvar = ",I2)')nvar
@@ -134,6 +135,18 @@ subroutine read_params
      endif
      call clean_stop
   end if
+
+   !-------------------------------------------------
+  ! Default passive scalar map
+  !-------------------------------------------------
+#if NVAR>NDIM+2
+  write(*,*)'Preprocessor check nvar > ndim +2 '
+  allocate(remap_pscalar(1:nvar-(ndim+2)))
+  do i=1,nvar-(ndim+2)
+     remap_pscalar(i) = i+ndim+2
+  enddo
+#endif
+
 
   open(1,file=infile)
   rewind(1)

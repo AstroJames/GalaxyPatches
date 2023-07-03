@@ -17,6 +17,7 @@ subroutine adaptive_loop
   real(kind=8),save::tstart=0.0
 #endif
   integer::ilevel,idim,ivar
+  
 
 #ifndef WITHOUTMPI
   tt1=MPI_WTIME()
