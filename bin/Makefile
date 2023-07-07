@@ -12,7 +12,7 @@ PATCH = '../patch/hydro/stratified_medium_fx_NSM'
 #PATCH = '../patch/hydro/stratified_medium_fx'
 GRACKLE = 0
 #EXEC = ramses_Martizzi_
-EXEC = ramses_MPI_
+EXEC = ramses_
 #############################################################################
 #GITBRANCH = $(shell git rev-parse --abbrev-ref HEAD)
 #GITHASH = $(shell git log --pretty=format:'%H' -n 1)
@@ -29,8 +29,8 @@ endif
 # Fortran compiler options and directives
 
 # --- No MPI, gfortran, DEBUG -------------------------------
-#F90 = gfortran -O0 -frecord-marker=4 -fbacktrace -ffree-line-length-none -ggdb3 -Wuninitialized
-#FFLAGS = -x f95-cpp-input $(DEFINES) -DWITHOUTMPI
+F90 = gfortran -O0 -frecord-marker=4 -fbacktrace -ffree-line-length-none -ggdb3 -Wuninitialized
+FFLAGS = -x f95-cpp-input $(DEFINES) -DWITHOUTMPI
 #-ffpe-trap=zero,underflow,overflow  $(DEFINES) -DWITHOUTMPI
 
 # --- No MPI, gfortran, production ---------
@@ -57,8 +57,8 @@ endif
 
 # --- MPI, gfortran syntax ------------------------------
 ##This one, maybe?
-F90 = mpifort -O3 -ffree-line-length-none
-FFLAGS = -x f95-cpp-input -fallow-argument-mismatch $(DEFINES)
+#F90 = mpifort -O3 -ffree-line-length-none
+#FFLAGS = -x f95-cpp-input -fallow-argument-mismatch $(DEFINES)
 
 # --- MPI, gfortran DEBUG syntax ------------------------------ 
 #F90 = mpif90 -frecord-marker=4 -ffree-line-length-none -fbacktrace -g -O -fbounds-check -Wuninitialized -Wall

@@ -1,7 +1,5 @@
 program ramses
   implicit none
-  print *, 'Starting RAMSES'
-  print *, 'Starting RAMSES her - abekat'
   
   ! Read run parameters
   call read_params

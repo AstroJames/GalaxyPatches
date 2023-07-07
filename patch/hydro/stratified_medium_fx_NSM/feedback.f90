@@ -434,13 +434,19 @@ subroutine blast_wave_feedback(ilevel, icount)
 
   ! Check if it is the right time for a SN to explode.
   nsnr=int(sn_rate*tout(noutput))
+  if(verbose .AND. myid==1) write(*,*)'Nsnr = ',nsnr
+
   if(.not.init_marker)then
+      if(verbose .AND. myid==1) write(*,*)'Have enetered NOT init_marker in blast_wave_feedback'
      allocate(marker(1:nsnr))
      marker=0
      do i=1,nblast_current
         marker(i)=1
      end do
+     if(verbose .and. myid==1) write(*,*)'nblast_current =',nblast_current
+     if(verbose .and. myid==1) write(*,*)'nblast_current_internal (before update) =',nblast_current_internal
      nblast_current_internal=nblast_current
+     if(verbose .and. myid==1) write(*,*)'nblast_current_internal (after update) =',nblast_current_internal
      init_marker=.true.
   end if
 
@@ -461,6 +467,9 @@ subroutine blast_wave_feedback(ilevel, icount)
         ysnr=y_expl(nblast_current_internal)*scale
         zsnr=z_expl(nblast_current_internal)*scale
         exp_type=1
+
+        if (verbose .and. myid == 1) write(*,*) 'Explosion number:',nblast_current_internal
+        if (verbose .and. myid == 1) write(*,*) 'Position is:',xsnr, ysnr, zsnr
 
         if(random_NSM(nblast_current_internal) < conversion_NSM.and.random_Ia(nblast_current_internal)>=conversion_Ia)then
            exp_type=2
