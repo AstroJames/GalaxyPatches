@@ -1,5 +1,6 @@
 subroutine read_params
   use amr_commons
+  use hydro_commons
   use pm_parameters
   use poisson_parameters
   use hydro_parameters
@@ -258,6 +259,20 @@ subroutine read_params
   !endif
 
   call read_hydro_params(nml_ok)
+
+
+  !---------------- SNE positions ----------------
+  ! Read in the positions of the SNe
+  ! Has to be done regardless of the value of nrestart 
+
+  open(unit=1,file=random_file,status='old')
+  if(verbose .and. myid==1)write(*,*)'From read_params: Loading in explosion positions from', random_file
+  do i=1,nrandom
+     read(1,*)random_expl(i),x_expl(i),y_expl(i),z_expl(i),random_NSM(i), random_Ia(i)
+  end do
+  close(1)
+
+
 #ifdef RT
   call rt_read_hydro_params(nml_ok)
 #endif

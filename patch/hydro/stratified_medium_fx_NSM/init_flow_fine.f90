@@ -411,11 +411,12 @@ subroutine init_flow_fine(ilevel)
 
      endif
 
-     open(unit=1,file=random_file,status='old')
-     do i=1,nrandom
-        read(1,*)random_expl(i),x_expl(i),y_expl(i),z_expl(i),random_NSM(i), random_Ia(i)
-     end do
-     close(1)
+    ! open(unit=1,file=random_file,status='old')
+    ! if(verbose .and. myid==1)write(*,*)'In init_flow_fine: Loading in explosion positions from', random_file
+    ! do i=1,nrandom
+    !    read(1,*)random_expl(i),x_expl(i),y_expl(i),z_expl(i),random_NSM(i), random_Ia(i)
+    ! end do
+    ! close(1)
 
      !write(*,*) "after medium_type condition!!!!!!!!!!!!!" 
 
