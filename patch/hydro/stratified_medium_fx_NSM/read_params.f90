@@ -140,7 +140,10 @@ subroutine read_params
   ! Default passive scalar map
   !-------------------------------------------------
 #if NVAR>NDIM+2
-  write(*,*)'Preprocessor check nvar > ndim +2 '
+  if(myid==1)then
+     write(*,*)'Preprocessor check nvar > ndim +2 '
+  endif
+  
   allocate(remap_pscalar(1:nvar-(ndim+2)))
   do i=1,nvar-(ndim+2)
      remap_pscalar(i) = i+ndim+2
