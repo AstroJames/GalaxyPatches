@@ -1,5 +1,8 @@
 *.o
 *.mod
+*.json
 ramses1d
 ramses2d
 ramses3d
+bin/*
+.vscode/

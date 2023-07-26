@@ -1,0 +1,10 @@
+        !COMPILER-GENERATED INTERFACE MODULE: Tue Nov 17 10:25:11 2020
+        MODULE GETICELL99__genmod
+          INTERFACE 
+            SUBROUTINE GETICELL99(ICELL,ICD,NP)
+              INTEGER(KIND=4) :: ICELL(1:99)
+              INTEGER(KIND=4) :: ICD(1:99,1:3)
+              INTEGER(KIND=4) :: NP
+            END SUBROUTINE GETICELL99
+          END INTERFACE 
+        END MODULE GETICELL99__genmod

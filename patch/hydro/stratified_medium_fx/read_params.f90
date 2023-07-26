@@ -69,6 +69,10 @@ subroutine read_params
   write(*,*)'               (c) CEA 1999-2007, UZH 2008-2014                '
   write(*,*)' '
   write(*,'(" Working with nproc = ",I4," for ndim = ",I1)')ncpu,ndim
+
+  print *, 'Abekat'
+  print *, ndim
+
   ! Check nvar is not too small
 #ifdef SOLVERhydro
   write(*,'(" Using solver = hydro with nvar = ",I2)')nvar

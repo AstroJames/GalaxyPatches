@@ -307,6 +307,4 @@ module amr_parameters
   integer::nrandom=500000
   real(dp),dimension(1:500000)::random_expl,x_expl,y_expl,z_expl,random_NSM, random_Ia, dice
 
-
-
 end module amr_parameters

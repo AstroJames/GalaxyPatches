@@ -1,0 +1,11 @@
+        !COMPILER-GENERATED INTERFACE MODULE: Tue Nov 17 10:24:54 2020
+        MODULE COUNT_NBORS__genmod
+          INTERFACE 
+            SUBROUTINE COUNT_NBORS(IGRIDN,IND,N_NBOR,NN)
+              INTEGER(KIND=4) :: IGRIDN(1:32,0:6)
+              INTEGER(KIND=4) :: IND
+              INTEGER(KIND=4) :: N_NBOR
+              INTEGER(KIND=4) :: NN
+            END SUBROUTINE COUNT_NBORS
+          END INTERFACE 
+        END MODULE COUNT_NBORS__genmod

@@ -1,5 +1,6 @@
 subroutine read_params
   use amr_commons
+  use hydro_commons
   use pm_parameters
   use poisson_parameters
   use hydro_parameters
@@ -69,6 +70,7 @@ subroutine read_params
   write(*,*)'               (c) CEA 1999-2007, UZH 2008-2014                '
   write(*,*)' '
   write(*,'(" Working with nproc = ",I4," for ndim = ",I1)')ncpu,ndim
+  
   ! Check nvar is not too small
 #ifdef SOLVERhydro
   write(*,'(" Using solver = hydro with nvar = ",I2)')nvar
@@ -134,6 +136,21 @@ subroutine read_params
      endif
      call clean_stop
   end if
+
+   !-------------------------------------------------
+  ! Default passive scalar map
+  !-------------------------------------------------
+#if NVAR>NDIM+2
+  if(myid==1)then
+     write(*,*)'Preprocessor check nvar > ndim +2 '
+  endif
+  
+  allocate(remap_pscalar(1:nvar-(ndim+2)))
+  do i=1,nvar-(ndim+2)
+     remap_pscalar(i) = i+ndim+2
+  enddo
+#endif
+
 
   open(1,file=infile)
   rewind(1)
@@ -242,6 +259,20 @@ subroutine read_params
   !endif
 
   call read_hydro_params(nml_ok)
+
+
+  !---------------- SNE positions ----------------
+  ! Read in the positions of the SNe
+  ! Has to be done regardless of the value of nrestart 
+
+  open(unit=1,file=random_file,status='old')
+  if(verbose .and. myid==1)write(*,*)'From read_params: Loading in explosion positions from', random_file
+  do i=1,nrandom
+     read(1,*)random_expl(i),x_expl(i),y_expl(i),z_expl(i),random_NSM(i), random_Ia(i)
+  end do
+  close(1)
+
+
 #ifdef RT
   call rt_read_hydro_params(nml_ok)
 #endif
