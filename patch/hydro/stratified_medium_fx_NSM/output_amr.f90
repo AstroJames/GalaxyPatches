@@ -32,7 +32,6 @@ subroutine dump_all
   if(IOGROUPSIZEREP>0)call title(((myid-1)/IOGROUPSIZEREP)+1,ncharcpu)
 
   if(ndim>1)then
-
      if(IOGROUPSIZEREP>0) then
         filedir='output_'//TRIM(nchar)//'/group_'//TRIM(ncharcpu)//'/'
      else
@@ -146,8 +145,11 @@ subroutine dump_all
         if(myid==1.and.print_when_io) write(*,*)'Start backup poisson'
         filename=TRIM(filedir)//'grav_'//TRIM(nchar)//'.out'
         call backup_poisson(filename)
+        if(myid==1.and.verbose)write(*,*)'Returned to output_amr from backup_poisson'
 #ifndef WITHOUTMPI
+         if(myid==1 .and. verbose)write(*,*)'In output amr, before MPI barrier call'
         if(synchro_when_io) call MPI_BARRIER(MPI_COMM_WORLD,info)
+        if(myid==1 .and. verbose)write(*,*)'...after MPI barrier call'
 #endif
         if(myid==1.and.print_when_io) write(*,*)'End backup poisson'
      end if
@@ -179,12 +181,14 @@ subroutine dump_all
      filename=TRIM(filedir)//'timer_'//TRIM(nchar)//'.txt'
      call output_timer(.true., filename)
 #ifndef WITHOUTMPI
+     if(myid==1 .and.verbose)write(*,*)'In output_amr just before MPI barrier call'
      if(synchro_when_io) call MPI_BARRIER(MPI_COMM_WORLD,info)
+     if(myid==1 .and.verbose)write(*,*)'In output_amr just after MPI barrier call'     
 #endif
      if(myid==1.and.print_when_io) write(*,*)'End output timer'
-
+     if(verbose)write(*,*)'Output timer done'
   end if
-
+if(verbose)write(*,*)'All done with dump_all'
 end subroutine dump_all
 !#########################################################################
 !#########################################################################

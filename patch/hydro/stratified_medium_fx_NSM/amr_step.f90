@@ -3,6 +3,7 @@ recursive subroutine amr_step(ilevel,icount)
   use pm_commons
   use hydro_commons
   use poisson_commons
+
 #ifdef RT
   use rt_hydro_commons
   use SED_module
@@ -28,6 +29,7 @@ recursive subroutine amr_step(ilevel,icount)
   if(numbtot(1,ilevel)==0)return
 
   if(verbose)write(*,999)icount,ilevel
+  if(verbose)write(*,*)'Compiler check in AMR_step.F90'
 
   !-------------------------------------------
   ! Make new refinements and update boundaries
@@ -153,7 +155,14 @@ recursive subroutine amr_step(ilevel,icount)
         if(clumpfind .and. ndim==3) call clump_finder(.true.,.false.)
 #endif
 
+        if(verbose)write(*,*)'Double check statement in amr_step, just before dump_all'
         call dump_all
+
+        if(verbose)write(*,*)'Back in amr_step after dump_all'
+
+        call write_integral_quantities(first_step, t)
+
+        if(verbose)write(*,*)'Continuing in amr_step after integral quantities'
 
 
         ! Dump lightcone

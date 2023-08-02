@@ -1,8 +1,9 @@
-*.o
-*.mod
+bin/*.o
+bin/*.mod
+bin/*.F90
 *.json
-ramses1d
-ramses2d
-ramses3d
-bin/*
+bin/ramses1d
+bin/ramses2d
+bin/ramses3d
+bin/F90/*
 .vscode/

@@ -1,6 +1,5 @@
 !! Function to calculate integral quantities and write to file. 
 !! Called by adaptive loop, each (?) coarse timestep
-
 subroutine write_integral_quantities(isFirst, simTime)
 !! We need access to the uold array 
     use hydro_commons
@@ -10,29 +9,28 @@ subroutine write_integral_quantities(isFirst, simTime)
 
 #ifndef WITHOUTMPI
     include 'mpif.h'
-!!    integer::info
 #endif
 
-    integer, intent(in) :: isFirst
-    integer, intent(in) :: simTime
+    logical, intent(in) :: isFirst
+    real(dp), intent(in) :: simTime
 
-    integer :: n_glob = 25 ! Number of variables to calculate - maybe shouldn't be hardcoded
+    !integer :: n_glob = 25 ! Number of variables to calculate - maybe shouldn't be hardcoded
 
     ! Grid and level variables for looping over the cells, communicating the with MPI and indexing the grid
-    integer:: ilevel, ind, ngrid, iskip, ilev, i, igrid, ncache, info
+    integer:: ilevel, ind, ngrid, iskip, ilev, i, igrid, ncache, info, ierr
     integer, dimension(1:nvector), save::ind_grid, ind_cell
     logical, dimension(1:nvector)::ok !to check for leaf cells 
 
     ! Cell sizes and scale conversions 
-    real(dp)::dx, dx_loc, vel_loc, dm
+    real(dp)::dx, dx_loc, vol_loc, dm, nx_loc
     real(dp)::scale,scale_nH,scale_T2,scale_l,scale_d,scale_t,scale_v
     
     ! Arrays to store the local and global sums
-    real(dp), dimension(0:n_glob) :: lsum, gsum 
+    real(dp), dimension(0:25) :: lsum, gsum 
     real(dp), dimension(1) :: lmin_dens, lmax_dens, gmin_dens, gmax_dens
 
     ! Counters and arrays for writing to file
-    integer:: iq, funit = 99
+    integer:: iq, funit = 99, istat
     integer, parameter :: max_q = 100
     character(len=25), dimension(max_q)::name_out
     real(dp), dimension(max_q)::quant_out
@@ -41,9 +39,12 @@ subroutine write_integral_quantities(isFirst, simTime)
     character(len=80)::filename
 
 
-    if(myid==1 .and. verbose)write(*,111) 'Entering write_integral_quantities'
-     ! Conversion factor from user units to cgs units
-     call units(scale_l,scale_t,scale_d,scale_v,scale_nH,scale_T2)
+    if(verbose)write(*,*) 'Entering write_integral_quantities'
+     ! Conversion factor from user units to cgs units (NB user units =/= code units!!!)
+    call units(scale_l,scale_t,scale_d,scale_v,scale_nH,scale_T2)
+
+    nx_loc =(icoarse_max - icoarse_min+1)
+    scale = boxlen/nx_loc
 
 !! Quantities to calculate: total mass, totol energy, total momentum, min, max and average gas density, 
 !! average velocity (decomposed?), velocity rms, average sound speed and/or average Mach number,
@@ -52,9 +53,9 @@ subroutine write_integral_quantities(isFirst, simTime)
      lsum = 0.d0
 
      ! Loop over levels 
-     do ilev = levelmin, levelmax
+     do ilev = levelmin, nlevelmax
         dx = 0.5D0**ilev !local cell size 
-        dx_loc = dx*scale ! cgs units 
+        dx_loc = dx*scale*scale_l ! in cgs (scale goes from code to user, scale_l goes from user to cgs)
         vol_loc = dx_loc**ndim ! cell volume 
 
         ! loop over grids 
@@ -65,8 +66,9 @@ subroutine write_integral_quantities(isFirst, simTime)
                 ind_grid(i)=active(ilev)%igrid(igrid+i-1)
             end do
 
-            ! Loop over cells 
-            do i = 1, twotondim
+            ! Loop over cells
+            !write(*,*)'Preparing to loop over cells, twotondim =', twondim
+            do ind = 1, twotondim
                 iskip = ncoarse+(ind-1)*ngridmax
                 do i =1, ngrid
                     ind_cell(i) = iskip+ind_grid(i)
@@ -76,15 +78,15 @@ subroutine write_integral_quantities(isFirst, simTime)
                 do i=1, ngrid
                     ok(i)=son(ind_cell(i))==0
                 end do 
-
-                do i, ngrid
+                !write(*,*)'Flagged the leaf cells, there are:', count(ok), ' leaf cells at this level'
+                do i = 1, ngrid
                     if(ok(i))then ! Only add values from leaf cells 
-                        dm = uold(ind_cell(i))*scale_d*vol_loc ! call mass 
+                        dm = uold(ind_cell(i), 1)*scale_d*vol_loc ! call mass 
 
                         lsum(0) = lsum(0) + vol_loc ! volume
                         lsum(1) = lsum(1) + dm ! mass
                         ! Momenta along x, y, z:
-                        lsum(2) = lsum(2) + uold(ind_cell(i), 2)*scale_v*dm 
+                        lsum(2) = lsum(2) + uold(ind_cell(i),2)*scale_v*dm 
                         lsum(3) = lsum(3) + uold(ind_cell(i),3)*scale_v*dm
                         lsum(4) = lsum(4) + uold(ind_cell(i),4)*scale_v*dm 
 
@@ -101,7 +103,7 @@ subroutine write_integral_quantities(isFirst, simTime)
 !! Communicate local sums to the root cpu (MPI_REDUCE, not ALLREDUCE) 
 #ifndef WITHOUTMPI
     gsum = 0.0d0
-    call MPI_Reduce(lsum, gsum, n_glob+1, MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD)
+    call MPI_REDUCE(lsum, gsum, 25+1, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
 #endif
 !! Calculate the average and 
 !! Create and write to file 
@@ -118,10 +120,12 @@ if (myid == 1) then !Only root cpu writes to file
     filename = 'global_quantities.txt'
     ! Check if the file already exsisits
     open(funit, file=trim(filename), position = 'APPEND', status = 'OLD', iostat = istat)
+
     if (istat .NE. 0) then ! File didn't exsists already 
         open(funit, file = trim(filename), position = 'APPEND')
     endif
-    if (isFirst .EQ. 1) ! .AND. (nrestart .NE. 0 .or. istart .NE. 0)) then 
+
+    if ((isFirst) .AND. (nrestart .NE. 0 .or. istat .NE. 0)) then 
         ! Create the header 
         header = ''
         do i = 1, iq
@@ -130,16 +134,18 @@ if (myid == 1) then !Only root cpu writes to file
             header = trim(header)//trim(tmp_str)
         enddo 
         write(funit, '(A)') trim(header) ! Write the header to file 
-    endif
-    if (nrestart .NE. 0) then !it's a restart 
+    else if (nrestart .NE. 0) then ! it's a restart
         write(funit, '(A)') '# Simulation restarted'
     endif
-    write(tmp_str, '(I3)') iq ! how many quantities are we writing 
-    write(funit, '('//trim(tmp_str)//'(IX,ES23.16))') quant_out(1:iq)
+    
+    do i = 1, iq
+        write(tmp_str, '(ES23.16)')quant_out(i)
+    end do
+    write(*,*)tmp_str
+    write(funit, '(I3,(1X, ES23.16))')iq, quant_out(1:iq)
 
     close(funit) ! close the file 
 endif ! Root cpu 
 
 !! How to deal with restarts from an older checkpoint? 
-
 end subroutine write_integral_quantities
