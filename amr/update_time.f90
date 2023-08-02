@@ -97,14 +97,13 @@ subroutine output_timer(write_file, filename)
   character(LEN=80)::filename, fileloc !Optional for writing timing info
 !-----------------------------------------------------------------------
   id_is_one = myid == 1
-  if(verbose)write(*,*)'My_is_one = ', id_is_one, 'and my id is:', myid
+
   total = 1e-9
   if (.not. write_file) ilun=6 ! 6 = std output
-  if(verbose)write(*,*)'Have not opened file yet, write_file is', write_file
+
   if (id_is_one .and. write_file) then
      fileloc=TRIM(filename) ! Open file for timing info
      open(unit=ilun,file=fileloc,form='formatted')
-     if(verbose)write(*,*)'File opened, fileloc =', fileloc, 'ilun = ', ilun
   endif
 
   if (id_is_one .and. ncpu==1) write (ilun,'(/a,i7,a)') '     seconds         %    STEP (rank=',myid,')'
@@ -146,9 +145,7 @@ subroutine output_timer(write_file, filename)
         if (any(gprint_timer)) call sleep(1) ! Make sure that master rank finished, before we print from other rank.
      endif
 
-     if(verbose.and.myid==1)write(*,*)'Ready to call mpi scatter, gprint_timer =', gprint_timer
      call MPI_SCATTER(gprint_timer,1,MPI_LOGICAL,print_timer,1,MPI_LOGICAL,0,MPI_COMM_WORLD,mpi_err)
-     if(verbose.and.myid==1)write(*,*)'After calling mpi scatter print_timer is:', print_timer
      
      if (print_timer) then
         write (ilun,*)
@@ -161,18 +158,11 @@ subroutine output_timer(write_file, filename)
      endif
 
      call MPI_BARRIER(MPI_COMM_WORLD,mpi_err)
-     if(myid==1 .and.verbose)write(*,*)'In output_timer just before MPI ALLREDUCE sum'
      call MPI_ALLREDUCE(total,gtotal,1,MPI_REAL8,MPI_SUM,MPI_COMM_WORLD,mpi_err)
-     if(myid==1 .and.verbose)write(*,*)'In output_timer just after MPI ALLREDUCE sum'
      gtotal = gtotal / ncpu
-
-     if(verbose)write(*,*)'Ready to write timer headers'
-
-     if(verbose.and.myid==1)write(*,*)'--------------------------------------------------------------------'
 
      if(myid==1)write(ilun,*)'--------------------------------------------------------------------'
      if(myid==1)write(ilun,'(/a)')'     minimum       average       maximum       standard dev        std/av       %   rmn   rmx  TIMER'     
-     if(verbose)write(*,*)'Done writing timer headers'
 
      do i = 1,ntimer
         if(verbose)write(*,*)'Timer loop started i = ', i
@@ -191,7 +181,6 @@ subroutine output_timer(write_file, filename)
   endif
 #endif
   if (id_is_one) close(ilun)
-  if(myid==1 .and. verbose)write(*,*)'All done in output_timer'
 end subroutine
 !=======================================================================
 subroutine reset_timer

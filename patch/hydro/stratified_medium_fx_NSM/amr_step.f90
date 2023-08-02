@@ -29,7 +29,6 @@ recursive subroutine amr_step(ilevel,icount)
   if(numbtot(1,ilevel)==0)return
 
   if(verbose)write(*,999)icount,ilevel
-  if(verbose)write(*,*)'Compiler check in AMR_step.F90'
 
   !-------------------------------------------
   ! Make new refinements and update boundaries
@@ -155,15 +154,10 @@ recursive subroutine amr_step(ilevel,icount)
         if(clumpfind .and. ndim==3) call clump_finder(.true.,.false.)
 #endif
 
-        if(verbose)write(*,*)'Double check statement in amr_step, just before dump_all'
+      !! Save snapshot data to file
         call dump_all
-
-        if(verbose)write(*,*)'Back in amr_step after dump_all'
-
+        !! Calculate global average quanties and save to file
         call write_integral_quantities(first_step, t)
-
-        if(verbose)write(*,*)'Continuing in amr_step after integral quantities'
-
 
         ! Dump lightcone
         if(lightcone .and. ndim==3) call output_cone()
