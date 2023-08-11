@@ -1,0 +1,125 @@
+&RUN_PARAMS 
+hydro=.true.
+poisson=.true.
+verbose=.false.
+ncontrol=1
+nrestart=0
+nremap=0
+nsubcycle=10*1
+!static=.true.
+/
+
+&AMR_PARAMS 
+!levelmin=5
+levelmin=5
+levelmax=5
+ngridmax=100000
+!nexpand=4,4,4
+nexpand=6
+boxlen=1000.
+/
+
+&POISSON_PARAMS
+epsilon=1.d-4
+gravity_type=2
+gravity_params(1)=1.42d-3
+gravity_params(2)=5.49d-4
+gravity_params(3)=0.18d0
+gravity_params(4)=7.67d3
+gravity_params(5)=2.08d-24
+/
+
+&INIT_PARAMS
+! Add something here, if needed.
+/
+
+&BOUNDARY_PARAMS
+nboundary = 2
+ibound_min= 0, 0 
+ibound_max= 0, 0
+jbound_min= 0, 0
+jbound_max= 0, 0
+kbound_min=-1,+1
+kbound_max=-1,+1
+bound_type= 3, 3
+/
+
+&REFINE_PARAMS 
+!interpol_var=0
+!interpol_type=2
+!err_grad_d=0.01
+!floor_d=1.0d10
+!x_refine=500.0,500.0,500.0,500.0
+!y_refine=500.0,500.0,500.0,500.0
+!z_refine=500.0,500.0,500.0,500.0
+!dx_refine=500.0,500.0,500.0,500.0
+!dy_refine=500.0,500.0,500.0,500.0
+!dz_refine=500.0,180.0,140.0,100.0
+interpol_var=0
+interpol_type=2
+err_grad_p=0.1
+/
+
+&OUTPUT_PARAMS
+delta_tout=250.0 !1 outputs per t0
+!tout = 15
+tend= 5000
+fintquants = 10
+/
+
+&HYDRO_PARAMS
+gamma=1.6667
+courant_factor=0.4
+scheme='muscl'
+riemann='hllc'
+slope_type=2
+pressure_fix=.true.
+beta_fix=0.05
+!difmag=0.05
+/
+
+&PHYSICS_PARAMS
+cooling=.true.
+metal=.true.
+! In solar metallicities.
+z_ave=1.0d-20
+z_ave_alpha=1.0d-20
+z_ave_rp=1.0d-20
+yield=0.0
+yield_Ia_Fe=0.0
+yield_Ia_alpha=0.0
+yield_Ia_rp=0.0
+yield_cc_Fe=0.01
+yield_cc_alpha=0.17
+yield_cc_rp=0.0
+yield_NSM_Fe=0.0
+yield_NSM_alpha=0.0
+yield_NSM_rp=1.0
+/
+
+&CC_PARAMS
+medium_type='strat'
+random_file='./list_of_random.dat'
+!grid_file=''
+! Units are in 1 pc and 10**4 yr
+rc=32.0
+xwind=500.0
+ywind=500.0
+zwind=500.0
+! This density is in H/cc. Assume X=0.76.
+rhocool=100.0
+! This pressure is in code units.
+!Pc=1.0d-2
+! Units are in cgs
+E_SN_th=8.0d48
+P_SN_rad=2.2d43
+sn_rate=0.11
+H_NSM=1.33
+H_Ia=1.5
+conversion_NSM=0.001
+conversion_Ia=-1
+t_delay_NSM=0.0
+t_delay_Ia=0.0
+Ia_vs_NSM=-1
+nblast_current= 0
+/
