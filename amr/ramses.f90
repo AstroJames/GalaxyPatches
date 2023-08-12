@@ -1,8 +1,6 @@
 program ramses
   implicit none
-!  write(*,*) 'Starting RAMSES'
-!  write(*,*) 'Starting RAMSES her - abekat'
-  
+
   ! Read run parameters
   call read_params
 

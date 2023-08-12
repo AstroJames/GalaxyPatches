@@ -62,6 +62,7 @@ err_grad_p=0.1
 &OUTPUT_PARAMS
 delta_tout=5.0
 tend=10000.
+fintquants=10
 /
 
 &HYDRO_PARAMS

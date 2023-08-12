@@ -27,7 +27,7 @@ subroutine read_params
   namelist/run_params/clumpfind,cosmo,pic,sink,lightcone,poisson,hydro,rt,verbose,debug, print_when_io &
        & ,nrestart,ncontrol,nstepmax,nsubcycle,nremap,ordering &
        & ,bisec_tol,static,geom,overload,cost_weighting,aton
-  namelist/output_params/noutput,foutput,aout,tout,output_mode &
+  namelist/output_params/noutput,foutput,fintquants,aout,tout,output_mode &
        & ,tend,delta_tout,aend,delta_aout,gadget_output
   namelist/amr_params/levelmin,levelmax,ngridmax,ngridtot &
        & ,npartmax,nparttot,nexpand,boxlen
@@ -97,7 +97,7 @@ subroutine read_params
   if(IOGROUPSIZE>0.or.IOGROUPSIZECONE>0.or.IOGROUPSIZEREP>0)write(*,*)' '
 
   ! Write information about git version
-  !call write_gitinfo
+  call write_gitinfo
 
   ! Read namelist filename from command line argument
   narg = iargc()
