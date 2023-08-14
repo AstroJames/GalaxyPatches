@@ -12,11 +12,11 @@ PATCH = ../patch/hydro/stratified_medium_fx_NSM
 GRACKLE = 0
 EXEC = ramses_
 #############################################################################
-#GITBRANCH = $(shell git rev-parse --abbrev-ref HEAD)
-#GITHASH = $(shell git log --pretty=format:'%H' -n 1)
-#GITREMOTE = $(shell git config --get branch.$(GITBRANCH).remote)
-#GITREPO = $(shell git config --get remote.$(GITREMOTE).url)
-#BUILDDATE = $(shell date +"%D-%T")
+GITBRANCH = $(shell git rev-parse --abbrev-ref HEAD)
+GITHASH = $(shell git log --pretty=format:'%H' -n 1)
+GITREMOTE = $(shell git config --get branch.$(GITBRANCH).remote)
+GITREPO = $(shell git config --get remote.$(GITREMOTE).url)
+BUILDDATE = $(shell date +"%D-%T")
 DEFINES = -DNVECTOR=$(NVECTOR) -DNDIM=$(NDIM) -DNPRE=$(NPRE) -DNENER=$(NENER) -DNVAR=$(NVAR) \
           -DSOLVER$(SOLVER)
 ifeq ($(GRACKLE),1)
@@ -62,13 +62,15 @@ endif
 #FFLAGS = -Mpreprocess $(DEFINES)
 
 # --- MPI, ifort syntax ------------------------------
-F90 = mpiifort -g #-pad-source
-FFLAGS = -xAVX -g -fpp -fast -cpp -fast $(DEFINES) -DNOSYSTEM
-#FFLAGS = -xAVX -g -traceback -fpp -fast -cpp -fast $(DEFINES) -DNOSYSTEM
+#F90 = mpiifort
+#FFLAGS = -xAVX -fpp -cpp -fast -free $(DEFINES) -DNOSYSTEM
 
 # --- MPI, ifort syntax, additional checks -----------
-#F90 = mpif90
+F90 = mpiifort 
 #FFLAGS = -warn all -O0 -g -traceback -fpe0 -ftrapuv -check bounds -cpp $(DEFINES) -DNOSYSTEM
+FFLAGS = -O2 -g -traceback -cpp -free $(DEFINES) -DNOSYSTEM
+#FFLAGS = -xAVX -g -fpp -cpp -fast -warn all $(DEFINES) -DNOSYSTEM
+
 
 
 # --- MPI, ifort syntax ------------------------------
@@ -105,7 +107,7 @@ ifeq ($(GRACKLE),1)
 MODOBJ += grackle_parameters.o
 endif
 MODOBJ += poisson_commons.o hydro_parameters.o hydro_commons.o cooling_module.o bisection.o sparse_mat.o \
-         clfind_commons.o gadgetreadfile.o write_makefile.o write_patch.o #write_gitinfo.o
+         clfind_commons.o gadgetreadfile.o write_makefile.o write_patch.o write_gitinfo.o
 
 AMROBJ = read_params.o init_amr.o init_time.o init_refine.o adaptive_loop.o amr_step.o update_time.o \
          output_amr.o flag_utils.o physical_boundaries.o virtual_boundaries.o refine_utils.o nbors_utils.o \
@@ -120,7 +122,7 @@ POISSONOBJ = init_poisson.o phi_fine_cg.o interpol_phi.o force_fine.o multigrid_
 # Hydro objects
 HYDROOBJ = init_hydro.o init_flow_fine.o write_screen.o output_hydro.o courant_fine.o godunov_fine.o \
            uplmde.o umuscl.o interpol_hydro.o godunov_utils.o condinit.o hydro_flag.o hydro_boundary.o \
-           boundana.o read_hydro_params.o synchro_hydro_fine.o
+           boundana.o read_hydro_params.o synchro_hydro_fine.o write_integral_quantities.o
 # Patch objects
 sinclude $(PATCH)/Makefile
 
@@ -139,9 +141,9 @@ ramses_aton: $(MODOBJ) $(ATON_MODOBJ) $(AMRLIB) $(ATON_OBJ) ramses.o
 	rm write_makefile.f90
 	rm write_patch.f90
 #############################################################################
-#write_gitinfo.o: FORCE
-#	$(F90) $(FFLAGS) -DPATCH=\'$(PATCH)\' -DGITBRANCH=\'$(GITBRANCH)\' -DGITHASH=\'"$(GITHASH)"\' \
-# -DGITREPO=\'$(GITREPO)\' -DBUILDDATE=\'"$(BUILDDATE)"\' -c ../amr/write_gitinfo.f90 -o $@		
+write_gitinfo.o: FORCE
+	$(F90) $(FFLAGS) -DPATCH=\'$(PATCH)\' -DGITBRANCH=\'$(GITBRANCH)\' -DGITHASH=\'"$(GITHASH)"\' \
+ -DGITREPO=\'$(GITREPO)\' -DBUILDDATE=\'"$(BUILDDATE)"\' -c ../amr/write_gitinfo.f90 -o $@		
 write_makefile.o: FORCE
 	../utils/scripts/cr_write_makefile.sh $(MAKEFILE_LIST)
 	$(F90) $(FFLAGS) -c write_makefile.f90 -o $@

@@ -1,9 +1,0 @@
-        !COMPILER-GENERATED INTERFACE MODULE: Tue Nov 17 10:24:55 2020
-        MODULE BUILD_COMM__genmod
-          INTERFACE 
-            SUBROUTINE BUILD_COMM(ILEVEL)
-              USE AMR_COMMONS
-              INTEGER(KIND=4) :: ILEVEL
-            END SUBROUTINE BUILD_COMM
-          END INTERFACE 
-        END MODULE BUILD_COMM__genmod

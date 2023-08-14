@@ -97,8 +97,10 @@ subroutine output_timer(write_file, filename)
   character(LEN=80)::filename, fileloc !Optional for writing timing info
 !-----------------------------------------------------------------------
   id_is_one = myid == 1
+
   total = 1e-9
   if (.not. write_file) ilun=6 ! 6 = std output
+
   if (id_is_one .and. write_file) then
      fileloc=TRIM(filename) ! Open file for timing info
      open(unit=ilun,file=fileloc,form='formatted')
@@ -110,8 +112,7 @@ subroutine output_timer(write_file, filename)
   end do
   if (ncpu==1) then
      do i = 1,ntimer
-        if (id_is_one .and. time(i)/total > 0.001) write (ilun,'(f12.3,4x,f6.1,4x,a24)') &
-          time(i), 100.*time(i)/total,labels(i)
+        if (id_is_one .and. time(i)/total > 0.001) write (ilun,'(f12.3,4x,f6.1,4x,a24)'), time(i), 100.*time(i)/total,labels(i)
      end do
      if (id_is_one) write (ilun,'(f12.3,4x,f6.1,4x,a)') total, 100., 'TOTAL'
   end if
@@ -120,6 +121,7 @@ subroutine output_timer(write_file, filename)
      ! Check that timers are consistent across ranks
      call MPI_BARRIER(MPI_COMM_WORLD,mpi_err)
      call MPI_GATHER(ntimer,1,MPI_INTEGER,all_ntimer,1,MPI_INTEGER,0,MPI_COMM_WORLD,mpi_err)
+     if(verbose .and. myid==1)write(*,*)'About to write to file id', ilun
      if (id_is_one) then
         if (maxval(all_ntimer) .ne. minval(all_ntimer)) then
            write (ilun,*)
@@ -142,7 +144,9 @@ subroutine output_timer(write_file, filename)
         enddo
         if (any(gprint_timer)) call sleep(1) ! Make sure that master rank finished, before we print from other rank.
      endif
+
      call MPI_SCATTER(gprint_timer,1,MPI_LOGICAL,print_timer,1,MPI_LOGICAL,0,MPI_COMM_WORLD,mpi_err)
+     
      if (print_timer) then
         write (ilun,*)
         write (ilun,*) 'Labels of timer on rank==',myid
@@ -157,10 +161,11 @@ subroutine output_timer(write_file, filename)
      call MPI_ALLREDUCE(total,gtotal,1,MPI_REAL8,MPI_SUM,MPI_COMM_WORLD,mpi_err)
      gtotal = gtotal / ncpu
 
-     if (id_is_one) write (ilun,*) '--------------------------------------------------------------------'
-     if (id_is_one) write (ilun,'(/a)') '     minimum       average       maximum' // &
-                  '  standard dev        std/av       %   rmn   rmx  TIMER'
+     if(myid==1)write(ilun,*)'--------------------------------------------------------------------'
+     if(myid==1)write(ilun,'(/a)')'     minimum       average       maximum       standard dev        std/av       %   rmn   rmx  TIMER'     
+
      do i = 1,ntimer
+        if(verbose)write(*,*)'Timer loop started i = ', i
         call MPI_GATHER(real(time(i),kind=8),1,MPI_REAL8,vtime,1,MPI_REAL8,0,MPI_COMM_WORLD,mpi_err)
         if (id_is_one) then
            if (maxval(vtime)/gtotal > 0.001) then
@@ -168,8 +173,7 @@ subroutine output_timer(write_file, filename)
               imn     = minloc(vtime,1)
               imx     = maxloc(vtime,1)
               rmstime = sqrt(sum((vtime - avtime)**2)/ncpu)
-              write (ilun,'(5(f12.3,2x),f6.1,2x,2i4,4x,a24)') &
-                 vtime(imn), avtime, vtime(imx), rmstime, rmstime/avtime, 100.*avtime/gtotal, imn, imx, labels(i)
+              write (ilun,'(5(f12.3,2x),f6.1,2x,2i4,4x,a24)'), vtime(imn), avtime, vtime(imx), rmstime, rmstime/avtime, 100.*avtime/gtotal, imn, imx, labels(i)
            endif
         endif
      end do

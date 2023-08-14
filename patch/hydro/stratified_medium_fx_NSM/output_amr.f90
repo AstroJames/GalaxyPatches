@@ -32,7 +32,6 @@ subroutine dump_all
   if(IOGROUPSIZEREP>0)call title(((myid-1)/IOGROUPSIZEREP)+1,ncharcpu)
 
   if(ndim>1)then
-
      if(IOGROUPSIZEREP>0) then
         filedir='output_'//TRIM(nchar)//'/group_'//TRIM(ncharcpu)//'/'
      else
@@ -182,9 +181,8 @@ subroutine dump_all
      if(synchro_when_io) call MPI_BARRIER(MPI_COMM_WORLD,info)
 #endif
      if(myid==1.and.print_when_io) write(*,*)'End output timer'
-
+     if(verbose)write(*,*)'Output timer done'
   end if
-
 end subroutine dump_all
 !#########################################################################
 !#########################################################################

@@ -257,7 +257,7 @@ subroutine gradient_phi(ind_grid,ngrid,ilevel)
 
   ! Interpolate potential from upper level
   do idim=1,ndim
-     call interpol_phi(ind_left (1,idim),phi_left (1,1,idim),ngrid,ilevel)
+     call interpol_phi(ind_left(1,idim),phi_left(1,1,idim),ngrid,ilevel)
      call interpol_phi(ind_right(1,idim),phi_right(1,1,idim),ngrid,ilevel)
   end do
 

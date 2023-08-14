@@ -1,7 +1,0 @@
-        !COMPILER-GENERATED INTERFACE MODULE: Tue Nov 17 10:24:54 2020
-        MODULE FLAG__genmod
-          INTERFACE 
-            SUBROUTINE FLAG
-            END SUBROUTINE FLAG
-          END INTERFACE 
-        END MODULE FLAG__genmod
