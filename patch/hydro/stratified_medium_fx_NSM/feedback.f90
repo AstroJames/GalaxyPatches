@@ -408,11 +408,22 @@ subroutine blast_wave_feedback(ilevel, icount)
 
   real(dp)::alpha,rcool,rrise,rnod,rbreak
 
-  integer::exp_type
+  integer::exp_type, funit, istat
+  character(80)::filename
 
   if(numbtot(1,ilevel)==0)return
   if(verbose)write(*,111)ilevel
   if(icount==2)return
+
+  !! Open the file to write the SNR data to
+  if(myid==1)then
+     filename = 'explosions.txt'
+   open(funit, file=trim(filename), position='APPEND', status = 'OLD', iostat=istat)
+
+   if(istat .NE.0)then !File didn't exsits so create it
+      open(funit, file=trim(filename), position='APPEND')
+   endif
+  endif
 
   ! Mesh spacing in that level
   nx_loc=(icoarse_max-icoarse_min+1)
@@ -434,7 +445,6 @@ subroutine blast_wave_feedback(ilevel, icount)
 
   ! Check if it is the right time for a SN to explode.
   nsnr=int(sn_rate*tout(noutput))
-  if(verbose .AND. myid==1) write(*,*)'Nsnr = ',nsnr
 
   if(.not.init_marker)then
       if(verbose .AND. myid==1) write(*,*)'Have enetered NOT init_marker in blast_wave_feedback'
@@ -468,8 +478,9 @@ subroutine blast_wave_feedback(ilevel, icount)
         zsnr=z_expl(nblast_current_internal)*scale
         exp_type=1
 
-        if (verbose .and. myid == 1) write(*,*) 'Explosion number:',nblast_current_internal
-        if (verbose .and. myid == 1) write(*,*) 'Position is:',xsnr, ysnr, zsnr
+        if (myid == 1) write(funit,'(A, I7.5)') 'Output number is', ifout
+        if (myid == 1) write(funit,'(A, I10.1)') 'Explosion number:',nblast_current_internal
+        if (myid == 1) write(funit, '(A, ES13.5, ES13.5, ES13.5)') 'Position is:',xsnr, ysnr, zsnr
 
         if(random_NSM(nblast_current_internal) < conversion_NSM.and.random_Ia(nblast_current_internal)>=conversion_Ia)then
            exp_type=2
@@ -610,6 +621,7 @@ subroutine blast_wave_feedback(ilevel, icount)
         !alpha=-11.3*(rho_average/scale_nH/100.)**(0.072)*(Z_average/0.02)**(0.070)
         !rcool=6.35*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.418)*(Z_average/0.02)**(-0.050)
         !rrise=9.19*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.439)*(Z_average/0.02)**(-0.067)
+
         if (rc/aexp<rcool) then
            E_SN_th=7.1d50
         else
@@ -628,9 +640,6 @@ subroutine blast_wave_feedback(ilevel, icount)
 
         rmax=rc/aexp
         rmax2=rmax*rmax
-        if(myid==1)write(*,*)'Average density: ',rho_average
-        if(myid==1)write(*,*)'Average metalicity =', Z_average/0.02
-
 
         ! Compute average density
         rho_average=0.0d0
@@ -737,9 +746,8 @@ subroutine blast_wave_feedback(ilevel, icount)
 
         if(Z_average/0.02<0.01) Z_average = 0.01
 
-        if(myid==1)write(*,*)'Average density ', rho_average
-        if(myid==1)write(*,*)'Average metalliciy (solar units) ', Z_average
-        if(myid==1)write(*,*)'Output number = ', noutput
+        if(myid==1)write(funit,'(A, ES12.5)')'Average density ', rho_average
+        if(myid==1)write(funit,'(A, ES12.5)')'Average metalliciy (solar units) ', Z_average
 
         !Subgrid model                                                                                                                                                                                                                                                        
         rbreak=4.001*3.08d18/scale_l*(rho_average/scale_nH/100.)**(-0.429)*(Z_average/0.02)**(-0.077)
@@ -769,9 +777,10 @@ subroutine blast_wave_feedback(ilevel, icount)
            end if
         end if
 
-        if(myid==1.and.exp_type==1)write(*,*)'SN explosion, E_th, P_rad (cgs) =',E_SN_th,P_SN_rad
-        if(myid==1.and.exp_type==2)write(*,*)'NSM explosion, E_th, P_rad (cgs) =', E_SN_th, P_SN_rad
-        if(myid==1.and.exp_type==3)write(*,*)'Ia explosion, E_th, P_rad (cgs) =', E_SN_th, P_SN_rad
+        if(myid==1.and.exp_type==1)write(funit,'(A)')'SN explosion'
+        if(myid==1.and.exp_type==2)write(funit,'(A)')'NSM explosion'
+        if(myid==1.and.exp_type==3)write(funit,'(A)')'Ia explosion'
+        if(myid==1)write(funit,'(A, ES12.5, ES12.5)')'E_th, P_rad (cgs) =', E_SN_th, P_SN_rad
 
         ! Inject supernova energy and momentum
         ! Loop over levels
