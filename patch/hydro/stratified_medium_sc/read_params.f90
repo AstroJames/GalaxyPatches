@@ -1,5 +1,6 @@
 subroutine read_params
   use amr_commons
+  use hydro_commons
   use pm_parameters
   use poisson_parameters
   use hydro_parameters
@@ -26,8 +27,8 @@ subroutine read_params
   namelist/run_params/clumpfind,cosmo,pic,sink,lightcone,poisson,hydro,rt,verbose,debug &
        & ,nrestart,ncontrol,nstepmax,nsubcycle,nremap,ordering &
        & ,bisec_tol,static,geom,overload,cost_weighting,aton
-  namelist/output_params/noutput,foutput,aout,tout,output_mode &
-       & ,tend,delta_tout,aend,delta_aout,gadget_output
+   namelist/output_params/noutput,foutput,fintquants,aout,tout,output_mode &
+       & ,tend,delta_tout,aend,delta_aout,gadget_output,walltime_hrs,minutes_dump
   namelist/amr_params/levelmin,levelmax,ngridmax,ngridtot &
        & ,npartmax,nparttot,nexpand,boxlen
   namelist/poisson_params/epsilon,gravity_type,gravity_params &
@@ -134,6 +135,21 @@ subroutine read_params
      endif
      call clean_stop
   end if
+
+    !-------------------------------------------------
+  ! Default passive scalar map
+  !-------------------------------------------------
+#if NVAR>NDIM+2
+   if(myid==1)then
+      write(*,*)'Preprocessor check nvar > ndim +2 '
+   endif
+
+   allocate(remap_pscalar(1:nvar-(ndim+2)))
+   do i=1,nvar-(ndim+2)
+      remap_pscalar(i) = i+ndim+2
+   enddo
+#endif
+
 
   open(1,file=infile)
   rewind(1)

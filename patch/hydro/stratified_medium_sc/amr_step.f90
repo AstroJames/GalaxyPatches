@@ -23,7 +23,7 @@ recursive subroutine amr_step(ilevel,icount)
   !-------------------------------------------------------------------!
   integer::i,idim,ivar
   logical::ok_defrag,output_now_all
-  logical,save::first_step=.true.
+  logical,save::first_step=.true., isFirst=.true.
 
   if(numbtot(1,ilevel)==0)return
 
@@ -166,6 +166,15 @@ recursive subroutine amr_step(ilevel,icount)
      endif
 
   endif
+
+  !----------------------------
+  !! Calculate global average quanties and save to file
+  !----------------------------
+   if (ilevel == levelmin) then 
+      if(mod(nstep_coarse,fintquants)==0) then
+         call write_integral_quantities(isFirst, t)
+      endif
+   endif
 
   !----------------------------
   ! Output frame to movie dump (without synced levels)

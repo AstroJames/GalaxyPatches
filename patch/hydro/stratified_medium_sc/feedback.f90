@@ -412,9 +412,22 @@ subroutine blast_wave_feedback(ilevel,icount)
 
   real(dp)::alpha,rcool,rrise,rnod,rbreak
 
+  integer::exp_type, funit, istat
+  character(80)::filename
+
   if(numbtot(1,ilevel)==0)return
   if(verbose)write(*,111)ilevel
   if(icount==2)return
+
+!! Open the file to write the SNR data to
+  if(myid==1)then
+   filename = 'explosions.txt'
+   open(funit, file=trim(filename), position='APPEND', status = 'OLD', iostat=istat)
+
+   if(istat .NE.0)then !File didn't exsits so create it
+      open(funit, file=trim(filename), position='APPEND', status = 'NEW')
+   endif
+  endif
 
   ! Mesh spacing in that level
   nx_loc=(icoarse_max-icoarse_min+1)
@@ -441,14 +454,17 @@ subroutine blast_wave_feedback(ilevel,icount)
   end if
 
   ! Check if it is the right time for a SN to explode.
-  nsnr=int(sn_rate*tout(noutput))
+  nsnr=int(sn_rate*tout(noutput)) ! Total number of SNR in the evolution of the sim 
   if(.not.init_marker)then
      allocate(marker(1:nsnr))
      marker=0
      do i=1,nblast_current
         marker(i)=1
      end do
+     if(verbose .and. myid==1) write(*,*)'nblast_current =',nblast_current
+     if(verbose .and. myid==1) write(*,*)'nblast_current_internal (before update) =',nblast_current_internal
      nblast_current_internal=nblast_current
+     if(verbose .and. myid==1) write(*,*)'nblast_current_internal (after update) =',nblast_current_internal
      init_marker=.true.
   end if
 
@@ -570,8 +586,6 @@ subroutine blast_wave_feedback(ilevel,icount)
         n_expl=n_expl+1
      end if
   end do
-
-  if(myid==1)write(*,*)'Number of supernovae this time-step ',n_expl
 
   if (n_expl > 0) then
      ! Compute average density
@@ -700,14 +714,22 @@ subroutine blast_wave_feedback(ilevel,icount)
                  E_SN_th=7.1d50*(rrise/rcool)**alpha
               end if
            end if
-           write(*,*)'Average density ', rho_average(i)
-           write(*,*)'SN explosion, E_th, P_rad (cgs) =',E_SN_th,P_SN_rad
-        end if
+           if (myid == 1) write(funit,'(A, I7.5)') 'Output number is', ifout
+           if (myid == 1) write(funit,'(A, I10.1)') 'Explosion number:', nblast_current_internal
+           if (myid == 1) write(funit, '(A, ES13.5, ES13.5, ES13.5)') 'Position is:',x_expl(i), y_expl(i), z_expl(i)
+           if(myid==1)write(funit,'(A, ES12.5)')'Average density ', rho_average(i)
+           if(myid==1)write(funit,'(A, ES12.5, ES12.5)')'E_th, P_rad (cgs) =', E_SN_th, P_SN_rad
+
+           nblast_current_internal = nblast_current_internal + 1
+
+         end if
      end do
 #else
      do i=1,nrandom
         rho_average(i)=rho_average(i)/weight(i)
         if(random_expl(i)>0.and.myid==1)then
+            !update the SNR counter 
+            nblast_current_internal = nblast_current_internal + 1
            rbreak=4.001*3.08d18/scale_l*(rho_average(i)/scale_nH/100.)**(-0.429)
            rnod=0.969*3.08d18/scale_l*(rho_average(i)/scale_nH/100.)**(-0.330)
            !rbreak=7.97*3.08d18/scale_l*(rhocool/scale_nH/100.)**(-0.458)
@@ -734,8 +756,6 @@ subroutine blast_wave_feedback(ilevel,icount)
                  E_SN_th=7.1d50*(rrise/rcool)**alpha
               end if
            end if
-           write(*,*)'Average density ', rho_average(i)
-           write(*,*)'SN explosion, E_th, P_rad (cgs) =',E_SN_th,P_SN_rad
         end if
      end do
 #endif
@@ -873,6 +893,8 @@ subroutine blast_wave_feedback(ilevel,icount)
                           uold(ind_cell(i),4)=uold(ind_cell(i),4)+(rho_ej+rho_average(isnr))*vzi
                           uold(ind_cell(i),5)=uold(ind_cell(i),5)+0.5*(rho_ej+rho_average(isnr))*(vxi**2+vyi**2+vzi**2)+Pi_/(gamma-1.0d0)
                           if(metal)uold(ind_cell(i),6)=uold(ind_cell(i),6)+yield*rho_ej ! metal yield
+                          
+                          if (myid == 1) write(funit,'(A, I10.1)') 'Explosion number:',nblast_current_internal
                        end if
                     end do
                  end if

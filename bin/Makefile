@@ -8,9 +8,9 @@ NPRE = 8
 NVAR = 8
 NENER = 0
 SOLVER = hydro
-PATCH = ../patch/hydro/stratified_medium_fx_NSM
+PATCH = ../patch/hydro/stratified_medium_sc
 GRACKLE = 0
-EXEC = ramses_
+EXEC = ramses_sc_
 #############################################################################
 GITBRANCH = $(shell git rev-parse --abbrev-ref HEAD)
 GITHASH = $(shell git log --pretty=format:'%H' -n 1)
