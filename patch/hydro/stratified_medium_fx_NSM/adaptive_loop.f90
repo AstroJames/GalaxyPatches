@@ -9,11 +9,15 @@ subroutine adaptive_loop
   include 'mpif.h'
 #endif
   integer::ilevel,idim,ivar,info
-  real(kind=8)::tt1,tt2
+  real(kind=8)::tt1,tt2,wallsec,dumpsec
   real(kind=4)::real_mem,real_mem_tot
+  real(kind=8),save::tstart=0.0
 
 #ifndef WITHOUTMPI
   tt1=MPI_WTIME(info)
+  if (tstart.eq.0.0)then
+      tstart=MPI_WTIME()
+  endif
 #endif
 
   call init_amr                      ! Initialize AMR variables
@@ -129,6 +133,16 @@ subroutine adaptive_loop
            write(*,*)'Time elapsed since last coarse step:',tt2-tt1
            call writemem(real_mem_tot)
         endif
+        if(walltime_hrs.gt.0d0) then
+            wallsec = walltime_hrs*3600.     ! Convert from hours to seconds
+            dumpsec = minutes_dump*60.       ! Convert minutes before end to seconds
+            if(wallsec-dumpsec.lt.tt2-tstart) then
+               output_now=.true.
+               if(myid==1) write(*,*) 'Dumping snapshot before walltime runs out'
+               ! Now set walltime to a negative number so we don't keep printing outputs
+               walltime_hrs = -1d0
+            endif
+         endif
      endif
 #endif
 

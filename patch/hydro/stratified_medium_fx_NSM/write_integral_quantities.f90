@@ -107,7 +107,7 @@ subroutine write_integral_quantities(isFirst, simTime)
                         lmax_dens = MAX(lmax_dens, dens)
                         
                         ! compute min dens with floor 
-                        lmin_dens_floor = MIN(lmin_dens_floor, dens)
+                        lmin_dens_floor = MAX(lmin_dens_floor, dens)
 
                         lsum(6) = lsum(6) + dens*vol_loc
                         lsum(7) = lsum(7) + dens**2*vol_loc

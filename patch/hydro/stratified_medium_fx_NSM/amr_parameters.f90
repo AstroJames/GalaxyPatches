@@ -102,6 +102,9 @@ module amr_parameters
   integer::output_mode=0      ! Output mode (for hires runs)
   logical::gadget_output=.false. ! Output in gadget format
   logical::output_now=.false. ! write output next step
+  real(dp)::walltime_hrs=-1.  ! Wallclock time for submitted job
+  real(dp)::minutes_dump=1.   ! Dump an output minutes before walltime ends
+
 
   ! Lightcone parameters
   real(dp)::thetay_cone=12.5
