@@ -41,7 +41,7 @@ module timer_m
   implicit none
   integer,            parameter         :: mtimer=200                    ! max nr of timers
   real(kind=8),       dimension(mtimer) :: start, time
-  integer                               :: ntimer=0, itimer
+  integer                               :: ntimer=0, itimer=0
   character(len=72), dimension(mtimer)  :: labels
 contains
 !-----------------------------------------------------------------------
