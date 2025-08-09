@@ -8,3 +8,16 @@ bin/ramses_3d
 bin/F90/*
 bin/*~
 .vscode/
+*.swp
+*.bak
+*.tmp
+*.log
+*.out
+*.aux
+*.dvi
+*.ps
+CLAUDE.md
+cooling_analysis
+ramses_reader_development
+bin/ramses_*
+*.pyc
