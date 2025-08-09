@@ -91,7 +91,14 @@ module cooling_module
   logical :: madau=.false.           
   logical :: weinberg=.false. 
   logical :: weinbergint=.false. 
-  logical :: courty=.true.
+  logical :: courty=.false.
+  logical :: schure=.true.
+  
+  ! Schure cooling parameters
+  real(kind=8) :: schure_heating_rate=2.0d-26  ! Uniform UV heating rate in erg/s
+  
+  ! Runtime cooling model selection
+  integer :: cooling_model=6  ! Default to Courty model (6), Schure is 7
 
   ! Si teyssier ou theuns :
   real(kind=8) :: J0in=1.d-22  ! J0 default 
@@ -256,6 +263,7 @@ subroutine set_model(Nmodel,J0in_in,J0min_in,alpha_in,normfacJ0_in,zreioniz_in, 
      weinberg=.false.
      weinbergint=.false.
      courty=.false.
+     schure=.false.
      if (Nmodel==1) then
         teyssier=.true.
      elseif (Nmodel==2) then
@@ -268,9 +276,13 @@ subroutine set_model(Nmodel,J0in_in,J0min_in,alpha_in,normfacJ0_in,zreioniz_in, 
         weinbergint=.true.
      elseif (Nmodel==6) then
         courty=.true.
+     elseif (Nmodel==7) then
+        schure=.true.
      else
         write(*,*) 'ERROR in set_model : wrong value of Nmodel'
         write(*,*) 'Nmodel =',Nmodel
+        write(*,*) 'Available models: 1=Teyssier, 2=Theuns, 3=Madau,'
+        write(*,*) '                  4=Weinberg, 5=Weinbergint, 6=Courty, 7=Schure'
         STOP
      endif
   endif
@@ -487,12 +499,12 @@ subroutine compute_J0min(h,omegab,omega0,omegaL,J0min_in)
   if (verbose_cooling)  write(*,*) 'J0min found ',J0min_in
 end subroutine compute_J0min
 !=======================================================================
-subroutine solve_cooling(nH,T2,zsolar,boost,dt,deltaT2,ncell,LAGN,r)
+subroutine solve_cooling(nH,T2,zsolar,boost,dt,deltaT2,ncell,LAGN,r,lambda_out)
 !=======================================================================
   implicit none  
   integer::ncell
   real(kind=8)::dt
-  real(kind=8),dimension(1:ncell)::nH,T2,deltaT2,zsolar,boost,T,r
+  real(kind=8),dimension(1:ncell)::nH,T2,deltaT2,zsolar,boost,T,r,lambda_out
     
   real(kind=8)::facT,dlog_nH,dlog_T2,coeff,precoeff,h,h2,h3,mu,T_eps
   real(kind=8)::metal,cool,heat,cool_com,heat_com,w1T,w2T,w11,w12,w21,w22,err,yy,yy2,yy3
@@ -502,6 +514,7 @@ subroutine solve_cooling(nH,T2,zsolar,boost,dt,deltaT2,ncell,LAGN,r)
   real(kind=8),dimension(1:ncell)::rgt,lft,tau,tau_old
   real(kind=8),dimension(1:ncell)::time,time_old,facH,zzz,tau_ini
   real(kind=8),dimension(1:ncell)::w1H,w2H,wmax,time_max
+  real(kind=8),dimension(1:ncell)::lambda_store
   real(kind=8)::varmax=4d0
   integer::i,i_T2,iter,n,n_active
   integer,dimension(1:ncell)::ind,iii,i_nH
@@ -680,6 +693,11 @@ subroutine solve_cooling(nH,T2,zsolar,boost,dt,deltaT2,ncell,LAGN,r)
 
         wcool=MAX(abs(lambda)/tau(ind(i))*varmax,wmax(ind(i)),-lambda_prime*varmax)
 
+        ! Store lambda for output
+        ! lambda is the net cooling rate in erg cm^-3 s^-1
+        ! (positive = heating, negative = cooling)
+        lambda_store(ind(i))=lambda
+
         tau_old(ind(i))=tau(ind(i))
         tau(ind(i))=tau(ind(i))*(1d0+lambda_prime/wcool-lambda/tau(ind(i))/wcool)/(1d0+lambda_prime/wcool)
         time_old(ind(i))=time(ind(i))
@@ -716,6 +734,11 @@ subroutine solve_cooling(nH,T2,zsolar,boost,dt,deltaT2,ncell,LAGN,r)
      deltaT2(i)=tau(i)-tau_ini(i)
   end do
   
+  ! Copy lambda values to output
+  do i=1,ncell
+     lambda_out(i)=lambda_store(i)
+  end do
+  
 end subroutine solve_cooling
 !=======================================================================
 function J0simple(aexp)
@@ -736,6 +759,73 @@ function J0simple(aexp)
   J0simple=max(J0simple*J0in,J0min)
   return
 end function J0simple
+!=======================================================================
+function schure_cooling_function(T) result(Lambda)
+!=======================================================================
+! Schure et al. (2009) cooling function for bistable ISM
+! Creates cold (~100 K) and hot (~10^6 K) stable phases
+! Input: T in K
+! Output: Lambda in erg cm^3 s^-1
+!=======================================================================
+  implicit none
+  real(kind=8), intent(in) :: T
+  real(kind=8) :: Lambda
+  real(kind=8) :: logt
+  
+  ! Tabulated data from Schure et al. (2009) Table 2
+  ! log10(Lambda) values for 4.12 < log10(T) < 8.16
+  real(kind=8), parameter :: lhd(102) = (/ &
+    -22.5977d0, -21.9689d0, -21.5972d0, -21.4615d0, -21.4789d0, -21.5497d0, -21.6211d0, -21.6595d0, &
+    -21.6426d0, -21.5688d0, -21.4771d0, -21.3755d0, -21.2693d0, -21.1644d0, -21.0658d0, -20.9778d0, &
+    -20.8986d0, -20.8281d0, -20.7700d0, -20.7223d0, -20.6888d0, -20.6739d0, -20.6815d0, -20.7051d0, &
+    -20.7229d0, -20.7208d0, -20.7058d0, -20.6896d0, -20.6797d0, -20.6749d0, -20.6709d0, -20.6748d0, &
+    -20.7089d0, -20.8031d0, -20.9647d0, -21.1482d0, -21.2932d0, -21.3767d0, -21.4129d0, -21.4291d0, &
+    -21.4538d0, -21.5055d0, -21.5740d0, -21.6300d0, -21.6615d0, -21.6766d0, -21.6886d0, -21.7073d0, &
+    -21.7304d0, -21.7491d0, -21.7607d0, -21.7701d0, -21.7877d0, -21.8243d0, -21.8875d0, -21.9738d0, &
+    -22.0671d0, -22.1537d0, -22.2265d0, -22.2821d0, -22.3213d0, -22.3462d0, -22.3587d0, -22.3622d0, &
+    -22.3590d0, -22.3512d0, -22.3420d0, -22.3342d0, -22.3312d0, -22.3346d0, -22.3445d0, -22.3595d0, &
+    -22.3780d0, -22.4007d0, -22.4289d0, -22.4625d0, -22.4995d0, -22.5353d0, -22.5659d0, -22.5895d0, &
+    -22.6059d0, -22.6161d0, -22.6208d0, -22.6213d0, -22.6184d0, -22.6126d0, -22.6045d0, -22.5945d0, &
+    -22.5831d0, -22.5707d0, -22.5573d0, -22.5434d0, -22.5287d0, -22.5140d0, -22.4992d0, -22.4844d0, &
+    -22.4695d0, -22.4543d0, -22.4392d0, -22.4237d0, -22.4087d0, -22.3928d0 /)
+  
+  integer :: ipps
+  real(kind=8) :: x0, dx, logcool
+  
+  logt = log10(T)
+  
+  ! Low temperature regime: Koyama & Inutsuka (2002)
+  ! Molecular and atomic cooling
+  if (logt <= 4.2d0) then
+    Lambda = 2.0d-19 * exp(-1.184d5/(T + 1.0d3)) + &
+             2.8d-28 * sqrt(T) * exp(-92.0d0/T)
+  
+  ! High temperature regime: CGOLS fit  
+  ! Bremsstrahlung and high-T processes
+  else if (logt > 8.15d0) then
+    Lambda = 10.0d0**(0.45d0*logt - 26.065d0)
+  
+  ! Intermediate regime: SPEX tabulated data
+  ! Coronal equilibrium - creates bistable medium
+  else
+    ipps = int(25.0d0*logt) - 103
+    ipps = max(1, min(101, ipps))
+    
+    x0 = 4.12d0 + 0.04d0*dble(ipps-1)
+    dx = logt - x0
+    
+    if (ipps < 102) then
+      logcool = (lhd(ipps+1)*dx - lhd(ipps)*(dx - 0.04d0))*25.0d0
+    else
+      logcool = lhd(102)
+    endif
+    
+    Lambda = 10.0d0**logcool
+  endif
+  
+  return
+
+end function schure_cooling_function
 !=======================================================================
 subroutine cmp_table(nH_min,nH_max,T2_min,T2_max,nbin_n,nbin_T,aexp)
 !=======================================================================
@@ -958,8 +1048,19 @@ subroutine iterate(i_n,t_rad_spec,h_rad_spec,nbin_T,aexp)
   nH=10d0**table%nH(i_n)         
   do i_T = 1,nbin_T
      T2=10d0**table%T2(i_T)
-     ! Compute cooling, heating and mean molecular weight
-     call cmp_cooling(T2,nH,t_rad_spec,h_rad_spec,cool_tot,heat_tot,cool_com,heat_com,mu,aexp,n_spec)
+     
+     ! Special case for Schure et al. (2009) bistable cooling
+     if (schure) then
+        cool_tot = schure_cooling_function(T2)
+        heat_tot = schure_heating_rate  ! Configurable uniform UV heating
+        cool_com = 0.0d0    ! No Compton cooling for simplicity
+        heat_com = 0.0d0    ! No Compton heating
+        mu = 0.6d0          ! Mean molecular weight
+        n_spec = 1.0d-10    ! Dummy species abundances
+     else
+        ! Compute cooling, heating and mean molecular weight
+        call cmp_cooling(T2,nH,t_rad_spec,h_rad_spec,cool_tot,heat_tot,cool_com,heat_com,mu,aexp,n_spec)
+     endif
      table%cool(i_n,i_T)=log10(cool_tot)
      table%heat(i_n,i_T)=log10(heat_tot)
      table%cool_com(i_n,i_T)=log10(cool_com)
@@ -970,7 +1071,16 @@ subroutine iterate(i_n,t_rad_spec,h_rad_spec,nbin_T,aexp)
      endif
      ! Compute cooling and heating derivatives
      T2_eps=10d0**(table%T2(i_T)+0.01d0)
-     call cmp_cooling(T2_eps,nH,t_rad_spec,h_rad_spec,cool_tot_eps,heat_tot_eps,cool_com_eps,heat_com_eps,mu_eps,aexp,n_spec_eps)
+     if (schure) then
+        cool_tot_eps = schure_cooling_function(T2_eps)
+        heat_tot_eps = schure_heating_rate  ! Same configurable heating rate
+        cool_com_eps = 0.0d0
+        heat_com_eps = 0.0d0
+        mu_eps = 0.6d0
+        n_spec_eps = 1.0d-10    ! Dummy values to match main calculation
+     else
+        call cmp_cooling(T2_eps,nH,t_rad_spec,h_rad_spec,cool_tot_eps,heat_tot_eps,cool_com_eps,heat_com_eps,mu_eps,aexp,n_spec_eps)
+     endif
      table%cool_prime(i_n,i_T)=(log10(cool_tot_eps)-log10(cool_tot))/0.01
      table%heat_prime(i_n,i_T)=(log10(heat_tot_eps)-log10(heat_tot))/0.01
      table%cool_com_prime(i_n,i_T)=(log10(cool_com_eps)-log10(cool_com))/0.01

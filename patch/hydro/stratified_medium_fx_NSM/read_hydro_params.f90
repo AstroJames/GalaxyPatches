@@ -1,6 +1,7 @@
 subroutine read_hydro_params(nml_ok)
   use amr_commons
   use hydro_commons
+  use cooling_module, only: schure_heating_rate, cooling_model
   implicit none
 #ifndef WITHOUTMPI
   include 'mpif.h'
@@ -43,7 +44,8 @@ subroutine read_hydro_params(nml_ok)
        & ,eta_sn,yield,yield_Ia_Fe, yield_cc_Fe, yield_NSM_Fe, yield_Ia_alpha, yield_cc_alpha, yield_NSM_alpha, yield_Ia_rp, yield_cc_rp, yield_NSM_rp,rbubble,f_ek,ndebris,f_w,mass_gmc,kappa_IR &
        & ,J21,a_spec,z_ave,z_ave_alpha, z_ave_rp ,z_reion,ind_rsink,delayed_cooling &
        & ,self_shielding,smbh,agn &
-       & ,units_density,units_time,units_length,neq_chem,ir_feedback,ir_eff,t_diss,t_sne
+       & ,units_density,units_time,units_length,neq_chem,ir_feedback,ir_eff,t_diss,t_sne &
+       & ,schure_heating_rate,cooling_model
 
   ! Read namelist file
   rewind(1)
@@ -275,7 +277,7 @@ subroutine read_hydro_params(nml_ok)
   if(delayed_cooling)ixion=idelay+1
   ichem=ixion
   if(aton)ichem=ixion+1
-  ! Last variable is ichem
+  icool=ichem+1
+  ! Last variable is icool (cooling rate)
 
 end subroutine read_hydro_params
-

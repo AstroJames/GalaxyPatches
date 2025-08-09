@@ -81,6 +81,12 @@ cooling=.true.
 metal=.true.
 ! In solar metallicities.
 z_ave=1.0
+! Cooling model selection (runtime parameter):
+! cooling_model=6  ! Courty chemical network (default)
+! cooling_model=7  ! Schure bistable ISM with constant UV heating
+cooling_model=7
+! Schure UV heating rate (only used if cooling_model=7)
+schure_heating_rate=2.0d-26
 /
 
 &CC_PARAMS

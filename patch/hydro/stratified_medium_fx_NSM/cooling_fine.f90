@@ -61,6 +61,7 @@ subroutine coolfine1(ind_grid,ngrid,ilevel)
   integer,dimension(1:nvector),save::ind_cell,ind_leaf
   real(kind=8),dimension(1:nvector),save::nH,T2,delta_T2,ekk,r
   real(kind=8),dimension(1:nvector),save::T2min,Zsolar,boost,x_leaf,y_leaf,z_leaf
+  real(kind=8),dimension(1:nvector),save::lambda_cool
   real(dp),dimension(1:3)::skip_loc
   real(kind=8)::dx,dx_loc,scale,vol_loc
   real(dp)::xwinds,ywinds,zwinds
@@ -269,7 +270,7 @@ subroutine coolfine1(ind_grid,ngrid,ilevel)
 	! nH and T2 are cgs here.
 
 	! provide r and LAGN in cgs units here.
-	call solve_cooling(nH,T2,Zsolar,boost,dtcool,delta_T2,nleaf,LAGN,r)
+	call solve_cooling(nH,T2,Zsolar,boost,dtcool,delta_T2,nleaf,LAGN,r,lambda_cool)
      endif
 
      ! Compute rho
@@ -323,6 +324,17 @@ subroutine coolfine1(ind_grid,ngrid,ilevel)
         damp_factor=exp(-dtcool/t_blast)
         do i=1,nleaf
            uold(ind_leaf(i),idelay)=uold(ind_leaf(i),idelay)*damp_factor
+        end do
+     endif
+
+     ! Store cooling rates in uold array
+     if(cooling)then
+        do i=1,nleaf
+           ! Store as density-weighted cooling rate
+           ! lambda_cool is in erg cm^-3 s^-1 (net cooling rate per unit volume)
+           ! nH is in cm^-3 (number density of hydrogen)
+           ! Product is stored to maintain conservation properties
+           uold(ind_leaf(i),icool) = lambda_cool(i) * nH(i)
         end do
      endif
 
