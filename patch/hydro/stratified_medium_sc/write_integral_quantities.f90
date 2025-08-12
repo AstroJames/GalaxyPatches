@@ -228,7 +228,10 @@ if (myid == 0) then !Only root cpu writes to file
     ! Check if the file already exsisits
     open(funit, file=trim(filename), position = 'APPEND', status = 'OLD', iostat = istat)
 
-    if (istat .NE. 0) then ! File didn't exsists already 
+    ! Check if the file already exists
+    open(funit, file=trim(filename), position = 'APPEND', status = 'OLD', iostat = istat)
+
+    if (istat .NE. 0) then ! File didn't exist already 
         open(funit, file = trim(filename), position = 'APPEND')
     endif
 
