@@ -58,7 +58,10 @@ bound_type= 3, 3
 interpol_var=0
 interpol_type=2
 err_grad_p=0.1
+! Force refinement on restart - set to .true. when restarting with higher resolution
+force_refine_on_restart=.false.
 /
+
 
 &OUTPUT_PARAMS
 delta_tout=250.0 !1 outputs per t0
@@ -80,7 +83,7 @@ beta_fix=0.05
 
 &PHYSICS_PARAMS
 cooling=.true.
-metal=.true.
+metal=.false.
 ! In solar metallicities.
 z_ave=1.0d-20
 z_ave_alpha=1.0d-20
