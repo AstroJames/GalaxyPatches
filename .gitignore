@@ -8,3 +8,5 @@ bin/ramses_3d
 bin/F90/*
 bin/*~
 .vscode/
+.DS_Store
+*.swp
