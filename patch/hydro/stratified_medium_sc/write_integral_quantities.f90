@@ -235,7 +235,7 @@ if (myid == 0) then !Only root cpu writes to file
         open(funit, file = trim(filename), position = 'APPEND')
     endif
 
-    if ((isFirst) .and. (nrestart == 0 .or. istat .NE. 0)) then ! it's not a restart or if the file did not alraedy exist
+    if ((isFirst) .and. (nrestart == 0 .or. istat .NE. 0)) then ! it's not a restart or if the file did not already exist
         ! Create the header 
         header = ''
         do i = 1, iq
