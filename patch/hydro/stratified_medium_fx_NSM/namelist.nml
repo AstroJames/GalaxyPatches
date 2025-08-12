@@ -95,6 +95,12 @@ yield_cc_rp=0.0
 yield_NSM_Fe=0.0
 yield_NSM_alpha=0.0
 yield_NSM_rp=1.0
+! Cooling model selection (runtime parameter):
+! cooling_model=6  ! Courty chemical network (default)
+! cooling_model=7  ! Schure bistable ISM with constant UV heating
+cooling_model=7
+! Schure cooling heating rate in erg/s
+schure_heating_rate=2.0d-26
 /
 
 &CC_PARAMS
