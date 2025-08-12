@@ -57,6 +57,8 @@ bound_type= 3, 3
 interpol_var=0
 interpol_type=2
 err_grad_p=0.1
+! Force refinement on restart - set to .true. when restarting with higher resolution
+force_refine_on_restart=.false.
 /
 
 &OUTPUT_PARAMS
