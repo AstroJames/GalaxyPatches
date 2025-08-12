@@ -138,7 +138,7 @@ subroutine write_integral_quantities(isFirst, simTime)
                         P = uold(ind_cell(i), 5) - (0.5*(uold(ind_cell(i),2)**2 + uold(ind_cell(i),3)**2 + uold(ind_cell(i),4)**2)/uold(ind_cell(i),1))
                         P = (gamma - 1.0d0)*P*scale_d*scale_v**2 ! P = 2/3*e
 
-                        lsum(11) = lsum(11) + uold(ind_cell(i), 5)*scale_d*scale_v**2 ! Total fluid energy
+                        lsum(11) = lsum(11) + 0.5*dm*u_sq + uold(ind_cell(i), 5)*scale_d*scale_v**2 ! Total fluid energy (kinetic + internal)
 
                         !vx, vy, vz (average + rms)
                         do j = 1,3
