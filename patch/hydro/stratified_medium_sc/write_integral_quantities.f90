@@ -183,7 +183,7 @@ subroutine write_integral_quantities(isFirst, simTime)
 !! Calculate the average and 
 !! Create and write to file 
 !! If this is the very first step we need to create the file, otherwise we want to just write to it. 
-if (myid == 1) then !Only root cpu writes to file 
+if (myid == 0) then !Only root cpu writes to file 
     iq = 0 
     iq = iq+1; name_out(iq) = 'time';           quant_out(iq) = simTime*scale_t
     iq = iq+1; name_out(iq) = 'gas_mass';       quant_out(iq) = gsum(2)
