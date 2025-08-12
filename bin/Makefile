@@ -8,9 +8,9 @@ NPRE = 8
 NVAR = 8
 NENER = 0
 SOLVER = hydro
-PATCH = ../patch/hydro/stratified_medium_sc
+PATCH = ../patch/hydro/stratified_medium_fx_NSM
 GRACKLE = 0
-EXEC = ramses_sc_
+EXEC = ramses_fx_
 #############################################################################
 GITBRANCH = $(shell git rev-parse --abbrev-ref HEAD)
 GITHASH = $(shell git log --pretty=format:'%H' -n 1)
@@ -66,11 +66,14 @@ endif
 #FFLAGS = -xAVX -fpp -cpp -fast -free $(DEFINES) -DNOSYSTEM
 
 # --- MPI, ifort syntax, additional checks -----------
-F90 = mpiifort 
+F90 = mpif90 
 #FFLAGS = -warn all -O0 -g -traceback -fpe0 -ftrapuv -check bounds -cpp $(DEFINES) -DNOSYSTEM
-FFLAGS = -O2 -g -traceback -cpp -free $(DEFINES) -DNOSYSTEM
+FFLAGS = -O3 -march=native -mtune=native -ffree-line-length-none -fallow-argument-mismatch -fallow-invalid-boz -cpp $(DEFINES)
 #FFLAGS = -xAVX -g -fpp -cpp -fast -warn all $(DEFINES) -DNOSYSTEM
 
+# --- MPI, ifort syntax ------------------------------
+#F90 = ifort
+#FFLAGS = -xAVX -g -traceback -fpp -fast $(DEFINES) -DNOSYSTEM #-DRT 
 
 
 # --- MPI, ifort syntax ------------------------------
