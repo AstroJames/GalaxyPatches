@@ -674,8 +674,8 @@ subroutine create_output_dirs(filedir)
   if (.not.withoutmkdir) then
 #ifdef NOSYSTEM
     filedirini = filedir(1:13)
-    call PXFMKDIR(TRIM(filedirini),LEN(TRIM(filedirini)),O'755',info)
-    call PXFMKDIR(TRIM(filedir),LEN(TRIM(filedir)),O'755',info)
+    call PXFMKDIR(TRIM(filedirini),LEN(TRIM(filedirini)),493,info)
+    call PXFMKDIR(TRIM(filedir),LEN(TRIM(filedir)),493,info)
 #else
     call EXECUTE_COMMAND_LINE(filecmd,exitstat=ierr,wait=.true.)
     if(ierr.ne.0 .and. ierr.ne.127)then
