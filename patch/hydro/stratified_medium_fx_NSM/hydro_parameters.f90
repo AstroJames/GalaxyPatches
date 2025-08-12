@@ -97,4 +97,7 @@ module hydro_parameters
   ! Maximum temperature limit
   real(dp)::T_limit=1.0d12
 
+  ! Force refinement on restart
+  logical::force_refine_on_restart=.false.
+
 end module hydro_parameters
