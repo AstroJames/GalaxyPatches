@@ -175,7 +175,7 @@ subroutine write_integral_quantities(isFirst, simTime)
 !! Communicate local sums to the root cpu (MPI_REDUCE, not ALLREDUCE) 
 #ifndef WITHOUTMPI
     gsum = 0.0d0
-    call MPI_REDUCE(lsum, gsum, 29+1, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+    call MPI_REDUCE(lsum, gsum, max_q, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
     gmin_dens = 0.0d0
     call MPI_REDUCE(lmin_dens, gmin_dens, 1, MPI_DOUBLE_PRECISION, MPI_MIN, 0, MPI_COMM_WORLD, ierr)
     gmax_dens = 0.0d0
