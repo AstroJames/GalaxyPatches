@@ -124,7 +124,7 @@ subroutine output_frame()
   moviecmd = 'mkdir -p '//trim(moviedir)
   if(.not.withoutmkdir) then
 #ifdef NOSYSTEM
-     if(myid==1)call PXFMKDIR(TRIM(moviedir),LEN(TRIM(moviedir)),O'755',info2)
+   if(myid==1)call PXFMKDIR(TRIM(moviedir),LEN(TRIM(moviedir)),493,info2)
 #else
      if(myid==1)then
         call EXECUTE_COMMAND_LINE(moviecmd,exitstat=ierr,wait=.true.)

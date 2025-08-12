@@ -79,7 +79,8 @@ contains
 #ifndef WITHOUTMPI
       integer :: ierr
 #endif
-
+      integer :: tmp_arr(1), tot_arr(1)
+      
       scale=boxlen/dble(icoarse_max-icoarse_min+1)
 
       if(verbose) print *,'entering build_bisection with update = ',update
@@ -102,13 +103,15 @@ contains
          call build_bisection_histogram(0,dir)
 
          ! compute total load for comp. box
-         mytmp=bisec_hist(1,bisec_nres)   ! total load for current cpu
+         mytmp = bisec_hist(1,bisec_nres)   ! total load for current cpu
 #ifndef WITHOUTMPI
-         call MPI_ALLREDUCE(mytmp,tottmp,1,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr)
+         tmp_arr(1) = mytmp
+         call MPI_ALLREDUCE(tmp_arr, tot_arr, 1, MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD, ierr)
+         tottmp = tot_arr(1)
 #else
-         tottmp=mytmp
+         tottmp = mytmp
 #endif
-         tmp_load(1)=tottmp
+         tmp_load(1) = tottmp
       end if
 
       ! Loop through levels
